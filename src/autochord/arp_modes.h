@@ -5,8 +5,10 @@
 #ifndef _ARP_MODES_H
 #define _ARP_MODES_H
 
-#include "seq_chord.h"
-#include "seq_scale.h"
+#include <stdint.h>
+
+#include "chord.h"
+#include "scale.h"
 /////////////////////////////////////////////////////////////////////////////
 // Global definitions
 /////////////////////////////////////////////////////////////////////////////
@@ -15,7 +17,6 @@
 /////////////////////////////////////////////////////////////////////////////
 // Global Types
 /////////////////////////////////////////////////////////////////////////////
-
 typedef enum key_e {
    KEY_C = 0,
    KEY_CSHARP = 1,
@@ -32,27 +33,25 @@ typedef enum key_e {
 } key_t;
 
 typedef enum mode_groups_e {
-   MODE_GROUP_BASE = 0,
-   MODE_GROUP_SEVENTH = 1,
-   MODE_GROUP_NINTH = 2,
-   MODE_GROUP_FIFTH = 3
+   MODE_GROUPS_BASE = 0,
+   MODE_GROUPS_SEVENTH = 1,
+   MODE_GROUPS_NINTH = 2,
+   MODE_GROUPS_FIFTH = 3
 }  mode_groups_t;
 #define NUM_MODE_GROUPS 4
 
 
-/////////////////////////////////////////////////////////////////////////////
-// Prototypes
-/////////////////////////////////////////////////////////////////////////////
+/**
+ * Class definition
+ */
 
-extern const char * ARP_MODES_GetNoteName(u8 note);
-extern const chord_type_t ARP_MODES_GetModeChord(scale_t scale,mode_groups_t modeGroup,u8 keySig,u8 note);
-extern const char * ARP_MODES_GetChordExtensionText(mode_groups_t extension);
+class ArpModes {
+const char * getNoteName(uint8_t note);
+const chord_type_t getModeChord(scale_t scale,mode_groups_t modeGroup,uint8_t keySig,uint8_t note);
+const char * getChordExtensionText(mode_groups_t extension);
 
-extern const char * ARP_MODES_GetModeGroupName(mode_groups_t group);
+const char * getModeGroupName(mode_groups_t group);
 
+};
 
-/////////////////////////////////////////////////////////////////////////////
-// Export global variables
-/////////////////////////////////////////////////////////////////////////////
-
-#endif /* _ARP_H */
+#endif 
