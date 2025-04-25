@@ -26,6 +26,8 @@
 #include <cmath>
 #include "midiarp_lv2.h"
 
+#define SCALE_INDEX_MAP_LENGTH = 7;
+
 MidiArpLV2::MidiArpLV2 (
     double sample_rate, const LV2_Feature *const *host_features )
     :MidiArp()
@@ -82,7 +84,6 @@ MidiArpLV2::MidiArpLV2 (
 
     uridMap = urid_map;
 }
-
 
 MidiArpLV2::~MidiArpLV2 (void)
 {
@@ -363,6 +364,21 @@ void MidiArpLV2::updateParams()
     channelOut =      (int)*val[CH_OUT];
     chIn =            (int)*val[CH_IN];
 
+    // Autochord params set in AutoChord object
+    AutoChord* pachord = AutoChord::getInstance();
+    pachord->setAutoChordExtension((autochord_extensions_t)*val[AUTOCHORD_EXTENSIONS]);
+    pachord->setAutoChordKeySig((key_t)*val[AUTOCHORD_KEY_SIG]);
+    pachord->setAutoChordScale((scale_t)*val[AUTOCHORD_SCALE]);
+    const autochord_state_t state = (autochord_state_t)*val[AUTOCHORD_STATE];
+
+    if (state != pachord->getAutoChordState()){
+        // Change in state so release all the NOTES that might be pending
+        // TODO
+        // releaseNote(inEv.data, tick, keep_rel);
+        // And save the new state
+        pachord->setAutoChordState(state);
+    }
+
     if (internalTempo != *val[TEMPO]) {
         internalTempo = *val[TEMPO];
         initTransport();
@@ -379,6 +395,7 @@ void MidiArpLV2::updateParams()
                     (int)*val[HOST_SPEED],
                     false);
     }
+    
 }
 
 void MidiArpLV2::initTransport()

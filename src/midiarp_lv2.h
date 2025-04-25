@@ -28,6 +28,8 @@
 #include "midiarp.h"
 #include "lv2_common.h"
 
+#include "autochord/autochord.h"
+
 #define QMIDIARP_ARP_LV2_URI QMIDIARP_LV2_URI "/arp"
 #define QMIDIARP_ARP_LV2_PREFIX QMIDIARP_ARP_LV2_URI "#"
 
@@ -69,7 +71,11 @@ public:
             TEMPO = 25,
             HOST_TEMPO = 26,
             HOST_POSITION = 27,
-            HOST_SPEED = 28
+            HOST_SPEED = 28,
+            AUTOCHORD_STATE = 29,
+            AUTOCHORD_KEY_SIG = 30,
+            AUTOCHORD_SCALE = 31,
+            AUTOCHORD_EXTENSIONS = 32
         };
 
         void connect_port(uint32_t port, void *data);
@@ -88,7 +94,7 @@ public:
 
 private:
 
-        float *val[30];
+        float *val[33];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t trStartingTick;
@@ -96,6 +102,7 @@ private:
         double internalTempo;
         double sampleRate;
         double tempo;
+ 
         bool ui_up;
         bool transportAtomReceived;
         void updateParams();

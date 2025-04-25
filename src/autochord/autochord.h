@@ -58,6 +58,7 @@ class AutoChord {
     static std::mutex mutex;
     AutoChord();
 
+    public:
     static AutoChord* getInstance() {
         std::lock_guard<std::mutex> lock(mutex);
         if (instance == nullptr) {
