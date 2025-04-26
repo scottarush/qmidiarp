@@ -1,4 +1,4 @@
-// $Id$
+  // $Id$
 /*
  * Force-to-Scale Functions
  *
@@ -19,6 +19,8 @@
 
 
 #include "scale.h"
+
+#include "autochord.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // Local types
@@ -44,14 +46,14 @@ typedef union {
   struct {
     uint8_t notes[6]; // unfortunately "unsigned notes:4[12]" doesn't work
   };
-} seq_scale_entry_t;
+} scale_entry_t;
 
 
 /////////////////////////////////////////////////////////////////////////////
 // Local variables
 /////////////////////////////////////////////////////////////////////////////
 
-static const seq_scale_entry_t seq_scale_table[] = {
+static const scale_entry_t scale_table[] = {
 //	             C 	C#	D 	D#	E 	F 	F#	G 	G#	A 	A#	B
 //	             0 	1 	2 	3 	4 	5 	6 	7 	8 	9 	10	11 	Semitone
 //              1 	b2	2 	b3	3 	4 	b5	5 	b6	6 	b7	7	Minor Tone
@@ -242,9 +244,9 @@ static const seq_scale_entry_t seq_scale_table[] = {
 /////////////////////////////////////////////////////////////////////////////
 // returns number of available scales
 /////////////////////////////////////////////////////////////////////////////
-int32_t SEQ_SCALE_NumGet(void)
+int32_t Scale::numGet(void)
 {
-  return sizeof(seq_scale_table)/sizeof(seq_scale_entry_t);
+  return sizeof(scale_table)/sizeof(scale_entry_t);
 }
 
 
@@ -252,12 +254,12 @@ int32_t SEQ_SCALE_NumGet(void)
 // returns pointer to the name of a scale
 // Length: 20 characters + zero terminator
 /////////////////////////////////////////////////////////////////////////////
-char *SEQ_SCALE_NameGet(uint8_t scale)
+char *Scale::nameGet(uint8_t scale)
 {
-  if( scale >= SEQ_SCALE_NumGet() )
+  if( scale >= Scale::numGet() )
     return "Invalid Scale       ";
 
-  return (char *)seq_scale_table[scale].name;
+  return (char *)scale_table[scale].name;
 }
 
 
@@ -265,12 +267,12 @@ char *SEQ_SCALE_NameGet(uint8_t scale)
 /////////////////////////////////////////////////////////////////////////////
 // Returns the note of a scale
 // IN: note: the current note
-//     scale: within the range 0..SEQ_SCALE_GetNum()-1
+//     scale: within the range 0..Scale::GetNum()-1
 //     root: the root note (0..11)
 // returns next note in scale
 // returns < 0 on errors
 /////////////////////////////////////////////////////////////////////////////
-int32_t SEQ_SCALE_NoteValueGet(uint8_t note, uint8_t scale, uint8_t root)
+int32_t Scale::noteValueGet(uint8_t note, uint8_t scale, uint8_t root)
 {
   // normalize note and determine octave
   int note_number = note - root;
@@ -279,14 +281,14 @@ int32_t SEQ_SCALE_NoteValueGet(uint8_t note, uint8_t scale, uint8_t root)
   note_number = note_number % 12;
 
   // get scaled value from table
-  uint8_t tmp = seq_scale_table[scale].notes[note_number>>1];
+  uint8_t tmp = scale_table[scale].notes[note_number>>1];
   uint8_t note_scaled = (note_number & 1) ? (tmp >> 4) : (tmp & 0xf);
 
   // add octave and root note
   note_scaled += 12*octave + root;
 
   // ensure that note is in the 0..127 range
-  note_scaled = SEQ_CORE_TrimNote(note_scaled, 0, 127);
+  note_scaled = (note_scaled, 0, 127);
 
   return note_scaled;
 }
@@ -295,12 +297,12 @@ int32_t SEQ_SCALE_NoteValueGet(uint8_t note, uint8_t scale, uint8_t root)
 /////////////////////////////////////////////////////////////////////////////
 // Returns the next note in scale
 // IN: note: the current note
-//     scale: within the range 0..SEQ_SCALE_GetNum()-1
+//     scale: within the range 0..Scale::GetNum()-1
 //     root: the root note (0..11)
 // returns next note in scale
 // returns < 0 on errors
 /////////////////////////////////////////////////////////////////////////////
-int32_t SEQ_SCALE_NextNoteInScale(uint8_t current_note, uint8_t scale, uint8_t root)
+int32_t Scale::nextNoteInScale(uint8_t current_note, uint8_t scale, uint8_t root)
 {
   uint8_t next_note = current_note + 1;
 
@@ -312,7 +314,7 @@ int32_t SEQ_SCALE_NextNoteInScale(uint8_t current_note, uint8_t scale, uint8_t r
     note_number = note_number % 12;
 
     // get scaled value from table
-    uint8_t tmp = seq_scale_table[scale].notes[note_number>>1];
+    uint8_t tmp = scale_table[scale].notes[note_number>>1];
     uint8_t note_scaled = (note_number & 1) ? (tmp >> 4) : (tmp & 0xf);
 
     // add octave and root note
@@ -332,15 +334,15 @@ int32_t SEQ_SCALE_NextNoteInScale(uint8_t current_note, uint8_t scale, uint8_t r
 // IN:  uint8_t scale #
 // # of notes in the scale or -1 if invalid scale #
 /////////////////////////////////////////////////////////////////////////////
-int32_t SEQ_SCALE_GetScaleLength(uint8_t scale){
-   if (scale > SEQ_SCALE_NumGet()){
+int32_t Scale::getScaleLength(uint8_t scale){
+   if (scale > numGet()){
       return -1;
    }
    uint8_t note = 0;
    uint8_t count = 0;
    for(uint8_t i=1;i < 12;i++){
       // get scaled value from table
-      uint8_t tmp = seq_scale_table[scale].notes[i>>1];
+      uint8_t tmp = scale_table[scale].notes[i>>1];
       uint8_t nextNote = (i & 1) ? (tmp >> 4) : (tmp & 0xf);
       if (nextNote != note){
          count++;
@@ -357,8 +359,8 @@ int32_t SEQ_SCALE_GetScaleLength(uint8_t scale){
 // root:   root note of the scale from 0..11
 // returns:  1 if part of scale, 0 if not in scale
 /////////////////////////////////////////////////////////////////////////////
-uint8_t SEQ_SCALE_IsNoteInScale(uint8_t scale,uint8_t rootNote,uint8_t note){
-   // Decrement note and then call SEQ_SCALE_NextNoteInScale.  If the 
+uint8_t Scale::isNoteInScale(uint8_t scale,uint8_t rootNote,uint8_t note){
+   // Decrement note and then call Scale::NextNoteInScale.  If the 
    // returned note is the same then this note is part of scale.  If not, then
    // it is not in the scale
    int prevNote = note-1;
@@ -366,7 +368,7 @@ uint8_t SEQ_SCALE_IsNoteInScale(uint8_t scale,uint8_t rootNote,uint8_t note){
       prevNote = 11;
    }
    
-   int32_t index = SEQ_SCALE_GetScaleIndex(scale,rootNote,note);
+   int32_t index = getScaleIndex(scale,rootNote,note);
    return (index >= 0) ? 1 : 0;
 }
 
@@ -378,8 +380,8 @@ uint8_t SEQ_SCALE_IsNoteInScale(uint8_t scale,uint8_t rootNote,uint8_t note){
 // scale:  
 // returns:  -1 if note note part of scale or index number from 0..scale length if valid
 /////////////////////////////////////////////////////////////////////////////
-int32_t SEQ_SCALE_GetScaleIndex(uint8_t scale,uint8_t root,uint8_t note){
-   if (scale > SEQ_SCALE_NumGet()){
+int32_t Scale::getScaleIndex(uint8_t scale,uint8_t root,uint8_t note){
+   if (scale > numGet()){
       return -1;
    }
    uint8_t normNote = note %12;
@@ -401,7 +403,7 @@ int32_t SEQ_SCALE_GetScaleIndex(uint8_t scale,uint8_t root,uint8_t note){
    uint8_t prevKey = 0;
    for(uint8_t i=1;i < 12;i++){
       // get scaled value from table
-      uint8_t tmp = seq_scale_table[scale].notes[i>>1];
+      uint8_t tmp = scale_table[scale].notes[i>>1];
       uint8_t nextKey = (i & 1) ? (tmp >> 4) : (tmp & 0xf);
       if (nextKey != prevKey){
          index++;

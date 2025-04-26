@@ -74,7 +74,7 @@ public:
             HOST_SPEED = 28,
             AUTOCHORD_STATE = 29,
             AUTOCHORD_KEY_SIG = 30,
-            AUTOCHORD_SCALE = 31,
+            AUTOCHORD_SCALE_INDEX = 31,
             AUTOCHORD_EXTENSIONS = 32
         };
 

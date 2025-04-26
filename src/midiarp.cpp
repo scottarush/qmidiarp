@@ -28,20 +28,19 @@
 
 #include "midiarp.h"
 #include "autochord/autochord.h"
-/*
-#include "lockfree.h"
+ /*
+ #include "lockfree.h"
 
-// this class must be implemented in such way
-// so that its copy (= operator) is realtime safe
-class MidiEngine
-{
-public:
-    int foo;
-};
-*/
+ // this class must be implemented in such way
+ // so that its copy (= operator) is realtime safe
+ class MidiEngine
+ {
+ public:
+     int foo;
+ };
+ */
 
-MidiArp::MidiArp()
-{
+MidiArp::MidiArp() {
     /*
     // this simulates access from the two threads
     // lock congestion is simulated by attempt to update
@@ -130,19 +129,17 @@ MidiArp::MidiArp()
     trigDelayTicks = 4;
 
     nextLength = 0;
-    Sample sample = {0, 0, 0, false};
+    Sample sample = { 0, 0, 0, false };
     outFrame.resize(MAXCHORD);
 
-    for (int l1 = 0; l1 < MAXCHORD; l1++)
-    {
+    for (int l1 = 0; l1 < MAXCHORD; l1++) {
         noteIndex[l1] = 0;
         chordSemitone[l1] = 0;
         outFrame[l1] = sample;
         nextVelocity[l1] = 0;
         nextNote[l1] = 0;
     }
-    for (int l1 = 0; l1 < MAXNOTES; l1++)
-    {
+    for (int l1 = 0; l1 < MAXNOTES; l1++) {
         for (int l2 = 0; l2 < 4; l2++)
             notes[0][l2][l1] = 0;
         for (int l2 = 0; l2 < 4; l2++)
@@ -153,34 +150,28 @@ MidiArp::MidiArp()
     }
 }
 
-bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
-{
+bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
     if (inEv.channel != chIn && chIn != OMNI)
         return (true);
     if ((inEv.type == EV_CONTROLLER) &&
-        ((inEv.data == CT_ALLNOTESOFF) || (inEv.data == CT_ALLSOUNDOFF)))
-    {
+        ((inEv.data == CT_ALLNOTESOFF) || (inEv.data == CT_ALLSOUNDOFF))) {
         clearNoteBuffer();
         return (true); // In case we receive all notes off we still forward
     }
-    if ((inEv.type == EV_CONTROLLER) && (inEv.data == CT_FOOTSW))
-    {
+    if ((inEv.type == EV_CONTROLLER) && (inEv.data == CT_FOOTSW)) {
         setSustain((inEv.value == 127), tick);
         return (false);
     }
 
     if (inEv.type != EV_NOTEON)
         return (true);
-    if (((inEv.data < indexIn[0]) || (inEv.data > indexIn[1])) || ((inEv.value < rangeIn[0]) || (inEv.value > rangeIn[1])))
-    {
+    if (((inEv.data < indexIn[0]) || (inEv.data > indexIn[1])) || ((inEv.value < rangeIn[0]) || (inEv.value > rangeIn[1]))) {
         return (true);
     }
 
-    if (inEv.value)
-    {
+    if (inEv.value) {
         // This is a NOTE ON event
-        if (!getPressedNoteCount() || trigLegato)
-        {
+        if (!getPressedNoteCount() || trigLegato) {
             purgeLatchBuffer(tick);
             if (restartByKbd)
                 restartFlag = true;
@@ -190,8 +181,8 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
         }
 
         // Process the key on according to the AutoChord setting
-        switch (AutoChord::getInstance()->getAutoChordState())
-        {
+        autochord_state_t state = AutoChord::getInstance()->getState();
+        switch (state) {
         case AUTOCHORD_OFF:
             // Normal qmidiarp operation.
             addNote(inEv.data, inEv.value, tick);
@@ -199,30 +190,34 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
             if (repeatPatternThroughChord == 2)
                 noteOfs = noteCount - 1;
 
-            if ((trigByKbd && (getPressedNoteCount() == 1)) || trigLegato)
-            {
+            if ((trigByKbd && (getPressedNoteCount() == 1)) || trigLegato) {
                 initArpTick(tick + trigDelayTicks);
                 gotKbdTrig = true;
             }
             break;
         case AUTOCHORD_PAD:
-            // TODO:  Pull the pad notes and add them all
-            break;
         case AUTOCHORD_ARP:
-            // TODO:  Pull the notes and add them one by one
+            if (state == AUTOCHORD_PAD) {
+                // for pad mode, overwrite the current pattern to a constant one
+                updatePattern("(012345)");
+            }
+            AutoChord* pChord = AutoChord::getInstance();
+
+            // Pull the chord notes and add them all at once to the arp in the order of the chord
+            const autochord_notes_t* pNotes = pChord->getChordNotes(inEv.data,inEv.value);
+            for(uint8_t keyNum=0;keyNum < pNotes->numNotes;keyNum++){
+                addNote(pNotes->notes[keyNum],pNotes->velocities[keyNum],tick);
+            }
             break;
         }
     }
-    else
-    {
+    else {
         // This is a NOTE OFF event
 
-        if (!noteCount)
-        {
+        if (!noteCount) {
             return (false);
         }
-        if (sustain)
-        {
+        if (sustain) {
             if (sustainBufferCount == MAXNOTES - 1)
                 purgeSustainBuffer(tick);
             sustainBuffer[sustainBufferCount] = inEv.data;
@@ -230,14 +225,12 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
             return (false);
         }
 
-        if (latch_mode && keep_rel)
-        {
+        if (latch_mode && keep_rel) {
             if (latchBufferCount == MAXNOTES - 1)
                 purgeLatchBuffer(tick);
             latchBuffer[latchBufferCount] = inEv.data;
             latchBufferCount++;
-            if (latchBufferCount != noteCount)
-            {
+            if (latchBufferCount != noteCount) {
                 if ((uint64_t)tick > (uint64_t)(lastLatchTick + latchDelayTicks) && (latchBufferCount > 1))
                     purgeLatchBuffer(tick);
                 lastLatchTick = tick;
@@ -251,23 +244,19 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
     return (false);
 }
 
-void MidiArp::addNote(int note, int vel, int64_t tick)
-{
+void MidiArp::addNote(int note, int vel, int64_t tick) {
     // modify buffer that is not accessed by arpeggio output
     int bufPtr = (noteBufPtr) ? 0 : 1;
     int index = 0;
 
     if (!noteCount || (note > notes[bufPtr][0][noteCount - 1]) || (repeatPatternThroughChord == 4))
         index = noteCount;
-    else
-    {
+    else {
         while (index < MAXNOTES && note > notes[bufPtr][0][index])
             index++;
 
-        for (int l3 = 0; l3 < 4; l3++)
-        {
-            for (int l2 = noteCount; l2 > index; l2--)
-            {
+        for (int l3 = 0; l3 < 4; l3++) {
+            for (int l2 = noteCount; l2 > index; l2--) {
                 notes[bufPtr][l3][l2] = notes[bufPtr][l3][l2 - 1];
             }
         }
@@ -281,22 +270,18 @@ void MidiArp::addNote(int note, int vel, int64_t tick)
     copyNoteBuffer();
 }
 
-void MidiArp::releaseNote(int note, int64_t tick, bool keep_rel)
-{
+void MidiArp::releaseNote(int note, int64_t tick, bool keep_rel) {
     // modify buffer that is not accessed by arpeggio output
     int bufPtr = (noteBufPtr) ? 0 : 1;
-    if ((!keep_rel) || (!release_time))
-    {
+    if ((!keep_rel) || (!release_time)) {
         // definitely remove from buffer
-        if (note == notes[bufPtr][0][noteCount - 1] && (repeatPatternThroughChord != 4))
-        {
+        if (note == notes[bufPtr][0][noteCount - 1] && (repeatPatternThroughChord != 4)) {
             // note is on top of buffer: only decrement noteCount
             noteCount--;
             if (repeatPatternThroughChord == 2)
                 noteOfs = noteCount - 1;
         }
-        else
-        {
+        else {
             // note is not on top: take out the note and pull down all above
             int index = 0;
             while ((index < MAXNOTES) && (index < noteCount) && (note != notes[bufPtr][0][index]))
@@ -310,22 +295,18 @@ void MidiArp::releaseNote(int note, int64_t tick, bool keep_rel)
     copyNoteBuffer();
 }
 
-void MidiArp::removeNote(int64_t *noteptr, int64_t tick, int keep_rel)
-{
+void MidiArp::removeNote(int64_t* noteptr, int64_t tick, int keep_rel) {
     int bufPtr, note;
     note = *noteptr;
 
     // modify buffer that is not accessed by arpeggio output
     bufPtr = (noteBufPtr) ? 0 : 1;
-    if (!noteCount)
-    {
+    if (!noteCount) {
         return;
     }
-    if (!keep_rel || (!release_time))
-    {
+    if (!keep_rel || (!release_time)) {
         // definitely remove from buffer, do NOT check for doubles
-        if (note == notes[bufPtr][0][noteCount - 1] && (repeatPatternThroughChord != 4))
-        {
+        if (note == notes[bufPtr][0][noteCount - 1] && (repeatPatternThroughChord != 4)) {
             // note is on top of buffer: only decrement noteCount
             noteCount--;
             if (tick == -1)
@@ -333,28 +314,23 @@ void MidiArp::removeNote(int64_t *noteptr, int64_t tick, int keep_rel)
             if ((repeatPatternThroughChord == 2) && (noteOfs))
                 noteOfs--;
         }
-        else
-        {
+        else {
             // note is not on top: take out the note and pull down all above
             int index = 0;
-            if (tick != -1)
-            {
+            if (tick != -1) {
                 while ((index < noteCount) && (note != notes[bufPtr][0][index]))
                     index++;
             }
-            else
-            {
+            else {
                 while ((index < noteCount) && ((note != notes[bufPtr][0][index]) || (!notes[bufPtr][3][index])))
                     index++;
             }
 
-            if (note == notes[bufPtr][0][index])
-            {
+            if (note == notes[bufPtr][0][index]) {
                 deleteNoteAt(index, bufPtr);
                 if (tick == -1)
                     releaseNoteCount--;
-                for (int l2 = index; l2 < noteCount; l2++)
-                {
+                for (int l2 = index; l2 < noteCount; l2++) {
                     old_attackfn[l2] = old_attackfn[l2 + 1];
                 }
             }
@@ -366,51 +342,41 @@ void MidiArp::removeNote(int64_t *noteptr, int64_t tick, int keep_rel)
     copyNoteBuffer();
 }
 
-void MidiArp::deleteNoteAt(int index, int bufPtr)
-{
-    for (int l3 = 0; l3 < 4; l3++)
-    {
-        for (int l2 = index; l2 < noteCount - 1; l2++)
-        {
+void MidiArp::deleteNoteAt(int index, int bufPtr) {
+    for (int l3 = 0; l3 < 4; l3++) {
+        for (int l2 = index; l2 < noteCount - 1; l2++) {
             notes[bufPtr][l3][l2] = notes[bufPtr][l3][l2 + 1];
         }
     }
     noteCount--;
 }
 
-void MidiArp::tagAsReleased(int note, int64_t tick, int bufPtr)
-{
+void MidiArp::tagAsReleased(int note, int64_t tick, int bufPtr) {
     // mark as released but keep with note off time tick
     int l1 = 0;
-    while ((l1 < noteCount) && ((note != notes[bufPtr][0][l1]) || (notes[bufPtr][3][l1])))
-    {
+    while ((l1 < noteCount) && ((note != notes[bufPtr][0][l1]) || (notes[bufPtr][3][l1]))) {
         l1++;
     }
-    if (note == notes[bufPtr][0][l1])
-    {
+    if (note == notes[bufPtr][0][l1]) {
         notes[bufPtr][3][l1] = 1;
         notes[bufPtr][2][l1] = tick;
         releaseNoteCount++;
     }
 }
 
-void MidiArp::copyNoteBuffer()
-{
+void MidiArp::copyNoteBuffer() {
     int newBufPtr = noteBufPtr;
     noteBufPtr++;
     noteBufPtr %= 2;
 
-    for (int l2 = 0; l2 < noteCount; l2++)
-    {
-        for (int l3 = 0; l3 < 4; l3++)
-        {
+    for (int l2 = 0; l2 < noteCount; l2++) {
+        for (int l3 = 0; l3 < 4; l3++) {
             notes[newBufPtr][l3][l2] = notes[noteBufPtr][l3][l2];
         }
     }
 }
 
-void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length)
-{
+void MidiArp::getNote(int64_t* tick, int64_t note[], int velocity[], int* length) {
     char c;
     int l1, tmpIndex[MAXCHORD], chordIndex, grooveTmp;
     int current_octave = 0;
@@ -423,8 +389,7 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
     gotCC = false;
     pause = false;
 
-    if (purgeReleaseFlag)
-    {
+    if (purgeReleaseFlag) {
         purgeLatchBuffer(arpTick);
         purgeReleaseNotes(noteBufPtr);
         purgeReleaseFlag = false;
@@ -440,32 +405,26 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
         framePtr = 0;
 
     chordSemitone[0] = semitone;
-    do
-    {
+    do {
         if (patternLen)
             c = (pattern.at(patternIndex));
         else
             c = ' ';
 
-        if (c != ' ')
-        {
-            if (isdigit(c) || (c == 'p'))
-            {
+        if (c != ' ') {
+            if (isdigit(c) || (c == 'p')) {
                 tmpIndex[chordIndex] = c - '0' + noteOfs;
-                if ((chordIndex < MAXCHORD - 1) && chordMode)
-                {
+                if ((chordIndex < MAXCHORD - 1) && chordMode) {
                     chordIndex++;
                     chordSemitone[chordIndex] = semitone;
                 }
                 gotCC = false;
                 pause = (c == 'p');
             }
-            else
-            {
+            else {
                 gotCC = true;
 
-                switch (c)
-                {
+                switch (c) {
                 case '(':
                     chordMode = true;
                     break;
@@ -520,8 +479,7 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
 
     l1 = 0;
     if (noteCount)
-        do
-        {
+        do {
             noteIndex[l1] = (noteCount) ? tmpIndex[l1] % noteCount : 0;
             note[l1] = clip(notes[noteBufPtr][0][noteIndex[l1]] + current_octave * 12 + chordSemitone[l1], 0, 127, &outOfRange);
             if (outOfRange)
@@ -530,8 +488,7 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
             grooveTmp = (framePtr % 2) ? grooveVelocity : -grooveVelocity;
 
             double releasefn = 0;
-            if ((release_time > 0) && (notes[noteBufPtr][3][noteIndex[l1]]))
-            {
+            if ((release_time > 0) && (notes[noteBufPtr][3][noteIndex[l1]])) {
                 releasefn = 1.0 - (double)(arpTick - notes[noteBufPtr][2][noteIndex[l1]]) / (release_time * (double)TPQN * 2);
 
                 if (releasefn < 0.0)
@@ -541,10 +498,8 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
                 releasefn = 1.0;
 
             double attackfn = 0;
-            if (attack_time > 0)
-            {
-                if (!notes[noteBufPtr][3][noteIndex[l1]])
-                {
+            if (attack_time > 0) {
+                if (!notes[noteBufPtr][3][noteIndex[l1]]) {
                     attackfn = (double)(arpTick - notes[noteBufPtr][2][noteIndex[l1]]) / (attack_time * (double)TPQN * 2);
 
                     if (attackfn > 1.0)
@@ -559,12 +514,10 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
 
             velocity[l1] = clip((double)notes[noteBufPtr][1][noteIndex[l1]] * vel * (1.0 + 0.005 * (double)(randomVelocity + grooveTmp)) * releasefn * attackfn, 0, 127, &outOfRange);
 
-            if ((release_time > 0.) && (notes[noteBufPtr][3][noteIndex[l1]]) && (!velocity[l1]))
-            {
+            if ((release_time > 0.) && (notes[noteBufPtr][3][noteIndex[l1]]) && (!velocity[l1])) {
                 removeNote(&notes[noteBufPtr][0][noteIndex[l1]], -1, 0);
             }
-            else
-            {
+            else {
                 l1++;
             }
         } while ((l1 < MAXCHORD - 1) && (tmpIndex[l1] >= 0) && ((l1 < noteCount) || (tmpIndex[l1] == 0)) && (noteCount));
@@ -572,110 +525,91 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
     note[l1] = -1; // mark end of array
     grooveTmp = (framePtr % 2) ? grooveLength : -grooveLength;
     *length = clip(len * stepWidth * (double)TPQN * (1.0 + 0.005 * (double)(randomLength + grooveTmp)), 2,
-                   1000000, &outOfRange) *
-              4;
+        1000000, &outOfRange) *
+        4;
 
     if (!framePtr)
         grooveTick = newGrooveTick;
     grooveTmp = TPQN * stepWidth * grooveTick * 0.01;
     /* pairwise application of new groove shift */
-    if (!(framePtr % 2))
-    {
+    if (!(framePtr % 2)) {
         grooveTmp = -grooveTmp;
         grooveTick = newGrooveTick;
     }
     arpTick += stepWidth * TPQN + grooveTmp;
 
-    if (!trigByKbd && !framePtr && !grooveTick)
-    {
+    if (!trigByKbd && !framePtr && !grooveTick) {
         /* round-up to current resolution (quantize) */
         arpTick /= (TPQN * minStepWidth);
         arpTick *= (TPQN * minStepWidth);
     }
 
     *tick = arpTick + clip(stepWidth * TPQN * 0.005 * (double)randomTick, 0,
-                           1000000, &outOfRange);
+        1000000, &outOfRange);
 
-    if (!(patternLen && noteCount) || pause || isMuted)
-    {
+    if (!(patternLen && noteCount) || pause || isMuted) {
         velocity[0] = 0;
     }
 }
 
-void MidiArp::checkOctaveAtEdge(bool reset)
-{
+void MidiArp::checkOctaveAtEdge(bool reset) {
     if (!octMode)
         return;
-    if (!octHigh && !octLow)
-    {
+    if (!octHigh && !octLow) {
         octOfs = 0;
         return;
     }
 
-    if (reset)
-    {
-        if (octMode == 2)
-        {
+    if (reset) {
+        if (octMode == 2) {
             octOfs = octHigh;
             octIncr = -1;
         }
-        else
-        {
+        else {
             octOfs = octLow;
             octIncr = 1;
         }
         return;
     }
-    if (octOfs > octHigh)
-    {
-        if (octMode == 3)
-        {
+    if (octOfs > octHigh) {
+        if (octMode == 3) {
             octIncr = -octIncr;
             octOfs--;
             octOfs--;
         }
-        else
-        {
+        else {
             octOfs = octLow;
         }
     }
-    if (octOfs < octLow)
-    {
-        if (octMode == 3)
-        {
+    if (octOfs < octLow) {
+        if (octMode == 3) {
             octIncr = -octIncr;
             octOfs++;
             octOfs++;
         }
-        else
-        {
+        else {
             octOfs = octHigh;
         }
     }
 }
 
-bool MidiArp::advancePatternIndex(bool reset)
-{
-    if (patternLen)
-    {
+bool MidiArp::advancePatternIndex(bool reset) {
+    if (patternLen) {
         patternIndex++;
     }
 
-    if ((patternIndex >= patternLen) || reset)
-    {
+    if ((patternIndex >= patternLen) || reset) {
         patternIndex = 0;
         restartFlag = false;
         applyPendingParChanges();
         currentRepetition++;
         currentRepetition %= nRepetitions;
 
-        switch (repeatPatternThroughChord)
-        {
+        switch (repeatPatternThroughChord) {
         case 1:
         case 4:
             noteOfs++;
-            if ((noteCount - 1 < patternMaxIndex + noteOfs) || reset)
-            {
+            if ((noteCount - 1 < patternMaxIndex + noteOfs) || reset) {
                 noteOfs = 0;
                 octOfs += octIncr;
                 checkOctaveAtEdge(reset);
@@ -684,22 +618,19 @@ bool MidiArp::advancePatternIndex(bool reset)
         case 2:
             noteOfs--;
             if ((noteCount - 1 < patternMaxIndex) ||
-                (noteOfs < patternMaxIndex) || reset)
-            {
+                (noteOfs < patternMaxIndex) || reset) {
                 noteOfs = noteCount - 1;
                 octOfs += octIncr;
                 checkOctaveAtEdge(reset);
             }
             break;
         case 3:
-            if (noteCount > 1)
-            {
+            if (noteCount > 1) {
                 int oldnoteofs = noteOfs;
                 while (noteOfs == oldnoteofs)
                     noteOfs = rand() % noteCount;
             }
-            if ((noteOfs == noteCount) || (noteOfs == 0) || reset)
-            {
+            if ((noteOfs == noteCount) || (noteOfs == 0) || reset) {
                 octOfs += octIncr;
                 checkOctaveAtEdge(reset);
             }
@@ -712,8 +643,7 @@ bool MidiArp::advancePatternIndex(bool reset)
     return (true);
 }
 
-void MidiArp::initLoop()
-{
+void MidiArp::initLoop() {
     stepWidth = 1.0;
     len = 0.5;
     vel = 0.8;
@@ -721,20 +651,17 @@ void MidiArp::initLoop()
     framePtr = 0;
 }
 
-void MidiArp::getNextFrame(int64_t askedTick)
-{
+void MidiArp::getNextFrame(int64_t askedTick) {
     gotKbdTrig = false;
-    Sample sample = {0, 0, 0, false};
+    Sample sample = { 0, 0, 0, false };
 
     newRandomValues();
 
     int l1 = 0;
-    if (askedTick >= nextTick)
-    {
+    if (askedTick >= nextTick) {
         returnTick = nextTick;
         getNote(&nextTick, nextNote, nextVelocity, &nextLength);
-        while ((l1 < MAXCHORD - 1) && (nextNote[l1] >= 0))
-        {
+        while ((l1 < MAXCHORD - 1) && (nextNote[l1] >= 0)) {
             sample.data = nextNote[l1];
             sample.value = nextVelocity[l1];
             sample.tick = returnTick;
@@ -743,8 +670,7 @@ void MidiArp::getNextFrame(int64_t askedTick)
         }
         returnLength = nextLength;
     }
-    else
-    {
+    else {
         sample.data = -1;
         outFrame[0] = sample;
     }
@@ -752,20 +678,17 @@ void MidiArp::getNextFrame(int64_t askedTick)
     outFrame[l1] = sample; // mark end of chord
 }
 
-void MidiArp::foldReleaseTicks(int64_t tick)
-{
+void MidiArp::foldReleaseTicks(int64_t tick) {
     int bufPtr, l2;
 
     bufPtr = (noteBufPtr) ? 0 : 1;
 
-    if (tick <= 0)
-    {
+    if (tick <= 0) {
         purgeReleaseNotes(bufPtr);
         return;
     }
 
-    for (l2 = 0; l2 < noteCount; l2++)
-    {
+    for (l2 = 0; l2 < noteCount; l2++) {
         notes[bufPtr][2][l2] -= tick;
     }
 
@@ -773,8 +696,7 @@ void MidiArp::foldReleaseTicks(int64_t tick)
     lastLatchTick -= tick;
 }
 
-void MidiArp::initArpTick(uint64_t tick)
-{
+void MidiArp::initArpTick(uint64_t tick) {
     arpTick = tick;
     nextTick = tick;
     nextVelocity[0] = 0;
@@ -783,16 +705,14 @@ void MidiArp::initArpTick(uint64_t tick)
     framePtr = 0;
 }
 
-std::string MidiArp::stripPattern(const std::string &p_pattern)
-{
+std::string MidiArp::stripPattern(const std::string& p_pattern) {
     std::string p = p_pattern;
     patternLen = 0;
     if (!p.length())
         return (p);
 
     char c = p[p.length() - 1];
-    while (!isdigit(c) && (c != 'p') && (c != ')'))
-    {
+    while (!isdigit(c) && (c != 'p') && (c != ')')) {
         p = p.substr(0, p.length() - 1);
         if (p.length() < 1)
             break;
@@ -804,8 +724,7 @@ std::string MidiArp::stripPattern(const std::string &p_pattern)
     return (p);
 }
 
-void MidiArp::updatePattern(const std::string &p_pattern)
-{
+void MidiArp::updatePattern(const std::string& p_pattern) {
     int l1;
 
     pattern = p_pattern;
@@ -826,14 +745,11 @@ void MidiArp::updatePattern(const std::string &p_pattern)
     // number of octaves, step width and number of steps in beats and
     // number of points
 
-    for (l1 = 0; l1 < patternLen; l1++)
-    {
+    for (l1 = 0; l1 < patternLen; l1++) {
         char c = pattern[l1];
 
-        if (isdigit(c))
-        {
-            if (!chordindex)
-            {
+        if (isdigit(c)) {
+            if (!chordindex) {
                 nsteps += stepwd;
                 npoints++;
                 if (chordmd)
@@ -842,8 +758,7 @@ void MidiArp::updatePattern(const std::string &p_pattern)
             if (isdigit(c) && (c - '0' > patternMaxIndex))
                 patternMaxIndex = c - '0';
         }
-        switch (c)
-        {
+        switch (c) {
         case '(':
             chordmd = true;
             chordindex = 0;
@@ -869,8 +784,7 @@ void MidiArp::updatePattern(const std::string &p_pattern)
             break;
 
         case 'p':
-            if (!chordmd)
-            {
+            if (!chordmd) {
                 nsteps += stepwd;
                 npoints++;
             }
@@ -903,25 +817,21 @@ void MidiArp::updatePattern(const std::string &p_pattern)
     nPoints = npoints;
 }
 
-void MidiArp::newRandomValues()
-{
+void MidiArp::newRandomValues() {
     randomTick = (double)randomTickAmp * (0.5 - (double)rand() / (double)RAND_MAX);
     randomVelocity = (double)randomVelocityAmp * (0.5 - (double)rand() / (double)RAND_MAX);
     randomLength = (double)randomLengthAmp * (0.5 - (double)rand() / (double)RAND_MAX);
 }
 
-void MidiArp::updateRandomTickAmp(int val)
-{
+void MidiArp::updateRandomTickAmp(int val) {
     randomTickAmp = val;
 }
 
-void MidiArp::updateOctaveMode(int val)
-{
+void MidiArp::updateOctaveMode(int val) {
     octMode = val;
     octOfs = 0;
 
-    switch (val)
-    {
+    switch (val) {
     case 0:
         octIncr = 0;
         break;
@@ -940,94 +850,77 @@ void MidiArp::updateOctaveMode(int val)
     }
 }
 
-void MidiArp::updateRandomVelocityAmp(int val)
-{
+void MidiArp::updateRandomVelocityAmp(int val) {
     randomVelocityAmp = val;
 }
 
-void MidiArp::updateRandomLengthAmp(int val)
-{
+void MidiArp::updateRandomLengthAmp(int val) {
     randomLengthAmp = val;
 }
 
-void MidiArp::updateAttackTime(int val)
-{
+void MidiArp::updateAttackTime(int val) {
     attack_time = (double)val;
 }
 
-void MidiArp::updateReleaseTime(int val)
-{
+void MidiArp::updateReleaseTime(int val) {
     if (release_time > 0 && val == 0)
         purgeReleaseFlag = true;
 
     release_time = (double)val;
 }
 
-void MidiArp::clearNoteBuffer()
-{
+void MidiArp::clearNoteBuffer() {
     noteCount = 0;
     latchBufferCount = 0;
     releaseNoteCount = 0;
 }
 
-int MidiArp::getPressedNoteCount()
-{
+int MidiArp::getPressedNoteCount() {
     int c = noteCount - latchBufferCount - releaseNoteCount;
     return (c);
 }
 
-void MidiArp::setSustain(bool on, uint64_t sustick)
-{
+void MidiArp::setSustain(bool on, uint64_t sustick) {
     sustain = on;
-    if (!sustain)
-    {
+    if (!sustain) {
         purgeSustainBuffer(sustick);
         if (latch_mode)
             purgeLatchBuffer(sustick);
     }
 }
 
-void MidiArp::purgeSustainBuffer(uint64_t sustick)
-{
-    for (int l1 = 0; l1 < sustainBufferCount; l1++)
-    {
+void MidiArp::purgeSustainBuffer(uint64_t sustick) {
+    for (int l1 = 0; l1 < sustainBufferCount; l1++) {
         int64_t buf = sustainBuffer[l1];
         removeNote(&buf, sustick, 1);
     }
     sustainBufferCount = 0;
 }
 
-void MidiArp::setLatchMode(bool on)
-{
+void MidiArp::setLatchMode(bool on) {
     latch_mode = on;
     if (!latch_mode)
         purgeLatchBuffer(arpTick);
 }
 
-void MidiArp::purgeLatchBuffer(uint64_t latchtick)
-{
-    for (int l1 = 0; l1 < latchBufferCount; l1++)
-    {
+void MidiArp::purgeLatchBuffer(uint64_t latchtick) {
+    for (int l1 = 0; l1 < latchBufferCount; l1++) {
         int64_t buf = latchBuffer[l1];
         removeNote(&buf, latchtick, 1);
     }
     latchBufferCount = 0;
 }
 
-void MidiArp::purgeReleaseNotes(int bufptr)
-{
-    for (int l1 = noteCount - 1; l1 >= 0; l1--)
-    {
-        if (notes[bufptr][3][l1])
-        {
+void MidiArp::purgeReleaseNotes(int bufptr) {
+    for (int l1 = noteCount - 1; l1 >= 0; l1--) {
+        if (notes[bufptr][3][l1]) {
             deleteNoteAt(l1, bufptr);
             releaseNoteCount--;
         }
     }
 }
 
-void MidiArp::applyPendingParChanges()
-{
+void MidiArp::applyPendingParChanges() {
     if (!parChangesPending)
         return;
 
@@ -1039,8 +932,7 @@ void MidiArp::applyPendingParChanges()
     needsGUIUpdate = true;
 }
 
-void MidiArp::setNextTick(uint64_t tick)
-{
+void MidiArp::setNextTick(uint64_t tick) {
     if (nSteps == 0)
         return;
 

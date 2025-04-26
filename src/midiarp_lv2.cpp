@@ -25,13 +25,11 @@
 #include <cstdio>
 #include <cmath>
 #include "midiarp_lv2.h"
-
 #define SCALE_INDEX_MAP_LENGTH = 7;
 
-MidiArpLV2::MidiArpLV2 (
-    double sample_rate, const LV2_Feature *const *host_features )
-    :MidiArp()
-{
+MidiArpLV2::MidiArpLV2(
+    double sample_rate, const LV2_Feature* const* host_features)
+    :MidiArp() {
     for (int l1 = 0; l1 < 30; l1++) val[l1] = 0;
 
     sampleRate = sample_rate;
@@ -61,14 +59,14 @@ MidiArpLV2::MidiArpLV2 (
 
     bufPtr = 0;
 
-    LV2_URID_Map *urid_map;
+    LV2_URID_Map* urid_map;
 
 
     /* Scan host features for URID map */
 
     for (int i = 0; host_features[i]; ++i) {
         if (::strcmp(host_features[i]->URI, LV2_URID_URI "#map") == 0) {
-            urid_map = (LV2_URID_Map *) host_features[i]->data;
+            urid_map = (LV2_URID_Map*)host_features[i]->data;
         }
     }
     if (!urid_map) {
@@ -85,13 +83,11 @@ MidiArpLV2::MidiArpLV2 (
     uridMap = urid_map;
 }
 
-MidiArpLV2::~MidiArpLV2 (void)
-{
+MidiArpLV2::~MidiArpLV2(void) {
 }
 
-void MidiArpLV2::connect_port ( uint32_t port, void *seqdata )
-{
-    switch(port) {
+void MidiArpLV2::connect_port(uint32_t port, void* seqdata) {
+    switch (port) {
     case 0:
         inEventBuffer = (LV2_Atom_Sequence*)seqdata;
         break;
@@ -99,13 +95,12 @@ void MidiArpLV2::connect_port ( uint32_t port, void *seqdata )
         outEventBuffer = (const LV2_Atom_Sequence*)seqdata;
         break;
     default:
-        val[port - 2] = (float *) seqdata;
+        val[port - 2] = (float*)seqdata;
         break;
     }
 }
 
-void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj)
-{
+void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj) {
     if (!hostTransport) return;
 
     QMidiArpURIs* const uris = &m_uris;
@@ -118,12 +113,12 @@ void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj)
     // that we will no longer process designated port events
     transportAtomReceived = true;
 
-    LV2_Atom *bpm = NULL, *speed = NULL, *pos = NULL;
+    LV2_Atom* bpm = NULL, * speed = NULL, * pos = NULL;
     lv2_atom_object_get(obj,
-                        uris->time_frame, &pos,
-                        uris->time_beatsPerMinute, &bpm,
-                        uris->time_speed, &speed,
-                        NULL);
+        uris->time_frame, &pos,
+        uris->time_beatsPerMinute, &bpm,
+        uris->time_speed, &speed,
+        NULL);
 
     if (bpm && bpm->type == uris->atom_Float) bpm1 = ((LV2_Atom_Float*)bpm)->body;
     if (pos && pos->type == uris->atom_Long)  pos1 = ((LV2_Atom_Long*)pos)->body;
@@ -132,8 +127,7 @@ void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj)
     updatePos(pos1, bpm1, speed1);
 }
 
-void MidiArpLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
-{
+void MidiArpLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos) {
     if (transportBpm != bpm) {
         /* Tempo changed */
         transportBpm = bpm;
@@ -145,7 +139,7 @@ void MidiArpLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
         const float frames_per_beat = 60.0f / transportBpm * sampleRate;
         transportFramesDelta = pos;
         tempoChangeTick = pos * TPQN / frames_per_beat;
-    }    
+    }
     if (transportSpeed != speed) {
         /* Speed changed, e.g. 0 (stop) to 1 (play) */
         transportSpeed = speed;
@@ -153,14 +147,13 @@ void MidiArpLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
             curFrame = transportFramesDelta;
             foldReleaseTicks(trStartingTick - tempoChangeTick);
             setNextTick(tempoChangeTick);
-        } 
+        }
 
         trStartingTick = tempoChangeTick;
     }
 }
 
-void MidiArpLV2::run ( uint32_t nframes )
-{
+void MidiArpLV2::run(uint32_t nframes) {
     const QMidiArpURIs* uris = &m_uris;
     const uint32_t capacity = outEventBuffer->atom.size;
 
@@ -175,7 +168,7 @@ void MidiArpLV2::run ( uint32_t nframes )
         LV2_ATOM_SEQUENCE_FOREACH(inEventBuffer, event) {
             // Control Atom Input
             if (event && (event->body.type == uris->atom_Object
-                        || event->body.type == uris->atom_Blank)) {
+                || event->body.type == uris->atom_Blank)) {
                 const LV2_Atom_Object* obj = (LV2_Atom_Object*)&event->body;
                 /* interpret atom-objects: */
                 if (obj->body.otype == uris->time_Position) {
@@ -197,7 +190,7 @@ void MidiArpLV2::run ( uint32_t nframes )
                     lv2_atom_object_get(obj, uris->pattern_string, &a0, 0);
                     if (a0 && a0->type == uris->atom_String) {
                         const char* p = (const char*)LV2_ATOM_BODY(a0);
-                        
+
                         std::string newPattern = p;
                         updatePattern(newPattern);
                         sendPatternFlag = false;
@@ -206,30 +199,30 @@ void MidiArpLV2::run ( uint32_t nframes )
             }
             // MIDI Input
             else if (event && event->body.type == uris->midi_MidiEvent) {
-                uint8_t *di = (uint8_t *) LV2_ATOM_BODY(&event->body);
-                MidiEvent inEv = {0, 0, 0, 0};
-                if ( (di[0] & 0xf0) == 0x90 ) {
+                uint8_t* di = (uint8_t*)LV2_ATOM_BODY(&event->body);
+                MidiEvent inEv = { 0, 0, 0, 0 };
+                if ((di[0] & 0xf0) == 0x90) {
                     inEv.type = EV_NOTEON;
                     inEv.value = di[2];
                 }
-                else if ( (di[0] & 0xf0) == 0x80 ) {
+                else if ((di[0] & 0xf0) == 0x80) {
                     inEv.type = EV_NOTEON;
                     inEv.value = 0;
                 }
-                else if ( (di[0] & 0xf0) == 0xb0 ) {
+                else if ((di[0] & 0xf0) == 0xb0) {
                     inEv.type = EV_CONTROLLER;
                     inEv.value = di[2];
                 }
                 else inEv.type = EV_NONE;
 
                 inEv.channel = di[0] & 0x0f;
-                inEv.data=di[1];
-                int tick = ((uint64_t)(curFrame - transportFramesDelta) 
-                        * nframes
-                        + (uint64_t)(&event->time.frames) % nframes)
-                        * TPQN*tempo/nframes/60/sampleRate 
-                        + tempoChangeTick;
-                        
+                inEv.data = di[1];
+                int tick = ((uint64_t)(curFrame - transportFramesDelta)
+                    * nframes
+                    + (uint64_t)(&event->time.frames) % nframes)
+                    * TPQN * tempo / nframes / 60 / sampleRate
+                    + tempoChangeTick;
+
                 //printf("curFrame %d \n", curFrame - transportFramesDelta);
                 // Set ticks to zero whenever notes with stopped
                 // transport are received.
@@ -240,7 +233,7 @@ void MidiArpLV2::run ( uint32_t nframes )
                 if ((hostTransport) && (transportSpeed == 0)) {
                     tick = 2;
                     unmatched = handleEvent(inEv, tick - 2, 0);
-                } 
+                }
                 else {
                     unmatched = handleEvent(inEv, tick - 2, 1);
                 }
@@ -251,16 +244,16 @@ void MidiArpLV2::run ( uint32_t nframes )
     }
 
 
-        // MIDI Output
-    for (uint32_t f = 0 ; f < nframes; f++) {
+    // MIDI Output
+    for (uint32_t f = 0; f < nframes; f++) {
         curTick = (uint64_t)(curFrame - transportFramesDelta)
-                        *TPQN*tempo/60/sampleRate + tempoChangeTick;
+            * TPQN * tempo / 60 / sampleRate + tempoChangeTick;
         if ((curTick >= nextTick) && (transportSpeed)) {
             getNextFrame(curTick);
             if (!isMuted) {
                 if (outFrame[0].value) {
                     int l2 = 0;
-                    while(outFrame[l2].data >= 0) {
+                    while (outFrame[l2].data >= 0) {
                         unsigned char d[3];
                         d[0] = 0x90 + channelOut;
                         d[1] = outFrame[l2].data;
@@ -287,10 +280,10 @@ void MidiArpLV2::run ( uint32_t nframes )
                 noteofftick = tmptick;
             }
         }
-        if ( (bufPtr) && ((curTick >= noteofftick)
-                || (hostTransport && !transportSpeed)) ) {
+        if ((bufPtr) && ((curTick >= noteofftick)
+            || (hostTransport && !transportSpeed))) {
             int outval = evQueue[idx];
-            for (int l4 = idx ; l4 < (bufPtr - 1);l4++) {
+            for (int l4 = idx; l4 < (bufPtr - 1);l4++) {
                 evQueue[l4] = evQueue[l4 + 1];
                 evTickQueue[l4] = evTickQueue[l4 + 1];
             }
@@ -306,8 +299,7 @@ void MidiArpLV2::run ( uint32_t nframes )
     }
 }
 
-void MidiArpLV2::forgeMidiEvent(uint32_t f, const uint8_t* const buffer, uint32_t size)
-{
+void MidiArpLV2::forgeMidiEvent(uint32_t f, const uint8_t* const buffer, uint32_t size) {
     QMidiArpURIs* const uris = &m_uris;
     LV2_Atom midiatom;
     midiatom.type = uris->midi_MidiEvent;
@@ -318,9 +310,8 @@ void MidiArpLV2::forgeMidiEvent(uint32_t f, const uint8_t* const buffer, uint32_
     lv2_atom_forge_pad(&forge, sizeof(LV2_Atom) + size);
 }
 
-void MidiArpLV2::updateParams()
-{
-    attack_time     = *val[ATTACK];
+void MidiArpLV2::updateParams() {
+    attack_time = *val[ATTACK];
 
     if (release_time != *val[RELEASE]) {
         updateReleaseTime(*val[RELEASE]);
@@ -343,40 +334,41 @@ void MidiArpLV2::updateParams()
     if (latch_mode != (bool)*val[LATCH_MODE]) {
         setLatchMode((bool)*val[LATCH_MODE]);
     }
-    
-    octLow     =   (int)*val[OCTAVE_LOW];
-    octHigh     =   (int)*val[OCTAVE_HIGH];
+
+    octLow = (int)*val[OCTAVE_LOW];
+    octHigh = (int)*val[OCTAVE_HIGH];
 
 
     deferChanges = ((bool)*val[DEFER]);
     if (isMuted != (bool)*val[MUTE] && !parChangesPending) setMuted((bool)(*val[MUTE]));
 
-    indexIn[0]   =   (int)*val[INDEX_IN1];
-    indexIn[1]   =   (int)*val[INDEX_IN2];
-    rangeIn[0]   =   (int)*val[RANGE_IN1];
-    rangeIn[1]   =   (int)*val[RANGE_IN2];
+    indexIn[0] = (int)*val[INDEX_IN1];
+    indexIn[1] = (int)*val[INDEX_IN2];
+    rangeIn[0] = (int)*val[RANGE_IN1];
+    rangeIn[1] = (int)*val[RANGE_IN2];
 
-    restartByKbd =  (bool)*val[ENABLE_RESTARTBYKBD];
-    trigByKbd =     (bool)*val[ENABLE_TRIGBYKBD];
-    trigLegato =    (bool)*val[ENABLE_TRIGLEGATO];
+    restartByKbd = (bool)*val[ENABLE_RESTARTBYKBD];
+    trigByKbd = (bool)*val[ENABLE_TRIGBYKBD];
+    trigLegato = (bool)*val[ENABLE_TRIGLEGATO];
 
     repeatPatternThroughChord = (int)*val[REPEAT_MODE];
-    channelOut =      (int)*val[CH_OUT];
-    chIn =            (int)*val[CH_IN];
+    channelOut = (int)*val[CH_OUT];
+    chIn = (int)*val[CH_IN];
 
     // Autochord params set in AutoChord object
     AutoChord* pachord = AutoChord::getInstance();
-    pachord->setAutoChordExtension((autochord_extensions_t)*val[AUTOCHORD_EXTENSIONS]);
-    pachord->setAutoChordKeySig((key_t)*val[AUTOCHORD_KEY_SIG]);
-    pachord->setAutoChordScale((scale_t)*val[AUTOCHORD_SCALE]);
+    pachord->setExtension((mode_extensions_t)*val[AUTOCHORD_EXTENSIONS]);
+    pachord->setKeySignature((key_signature_t)*val[AUTOCHORD_KEY_SIG]);
+    pachord->setScaleIndex((uint8_t)*val[AUTOCHORD_SCALE_INDEX]);
     const autochord_state_t state = (autochord_state_t)*val[AUTOCHORD_STATE];
 
-    if (state != pachord->getAutoChordState()){
-        // Change in state so release all the NOTES that might be pending
-        // TODO
-        // releaseNote(inEv.data, tick, keep_rel);
+    if (state != pachord->getState()) {
+        // Change in state so release all NOTES that might be pending
+        purgeReleaseNotes(bufPtr);
+        purgeSustainBuffer(bufPtr);
+        purgeLatchBuffer(bufPtr);
         // And save the new state
-        pachord->setAutoChordState(state);
+        pachord->setState(state);
     }
 
     if (internalTempo != *val[TEMPO]) {
@@ -390,16 +382,15 @@ void MidiArpLV2::updateParams()
     }
 
     if (hostTransport && !transportAtomReceived) {
-        updatePos(  (uint64_t)*val[HOST_POSITION],
-                    (float)*val[HOST_TEMPO],
-                    (int)*val[HOST_SPEED],
-                    false);
+        updatePos((uint64_t)*val[HOST_POSITION],
+            (float)*val[HOST_TEMPO],
+            (int)*val[HOST_SPEED],
+            false);
     }
-    
+
 }
 
-void MidiArpLV2::initTransport()
-{
+void MidiArpLV2::initTransport() {
     if (!hostTransport) {
         transportFramesDelta = curFrame;
         if (curTick > 0) tempoChangeTick = curTick;
@@ -412,8 +403,7 @@ void MidiArpLV2::initTransport()
     setNextTick(tempoChangeTick);
 }
 
-void MidiArpLV2::sendPattern(const std::string & p)
-{
+void MidiArpLV2::sendPattern(const std::string& p) {
     if (!(ui_up && sendPatternFlag)) return;
 
     sendPatternFlag = false;
@@ -436,11 +426,10 @@ void MidiArpLV2::sendPattern(const std::string & p)
     lv2_atom_forge_pop(&forge, &frame);
 }
 
-static LV2_State_Status MidiArpLV2_state_restore ( LV2_Handle instance,
+static LV2_State_Status MidiArpLV2_state_restore(LV2_Handle instance,
     LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle,
-    uint32_t flags, const LV2_Feature *const * )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+    uint32_t flags, const LV2_Feature* const*) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
 
     if (pPlugin == NULL) return LV2_STATE_ERR_UNKNOWN;
 
@@ -455,8 +444,8 @@ static LV2_State_Status MidiArpLV2_state_restore ( LV2_Handle instance,
     uint32_t key = uris->pattern_string;
     if (!key) return LV2_STATE_ERR_NO_PROPERTY;
 
-    const char *value1
-        = (const char *) (*retrieve)(handle, key, &size, &type, &flags);
+    const char* value1
+        = (const char*)(*retrieve)(handle, key, &size, &type, &flags);
 
     if (size < 2) return LV2_STATE_ERR_UNKNOWN;
 
@@ -467,11 +456,10 @@ static LV2_State_Status MidiArpLV2_state_restore ( LV2_Handle instance,
     return LV2_STATE_SUCCESS;
 }
 
-static LV2_State_Status MidiArpLV2_state_save ( LV2_Handle instance,
+static LV2_State_Status MidiArpLV2_state_save(LV2_Handle instance,
     LV2_State_Store_Function store, LV2_State_Handle handle,
-    uint32_t flags, const LV2_Feature *const * )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+    uint32_t flags, const LV2_Feature* const*) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
 
     if (pPlugin == NULL) return LV2_STATE_ERR_UNKNOWN;
 
@@ -500,64 +488,55 @@ static const LV2_State_Interface MidiArpLV2_state_interface =
     MidiArpLV2_state_restore
 };
 
-void MidiArpLV2::activate (void)
-{
+void MidiArpLV2::activate(void) {
     initTransport();
 }
 
-void MidiArpLV2::deactivate (void)
-{
+void MidiArpLV2::deactivate(void) {
     transportSpeed = 0;
     clearNoteBuffer();
 }
 
-static LV2_Handle MidiArpLV2_instantiate (
-    const LV2_Descriptor *, double sample_rate, const char *,
-    const LV2_Feature *const *host_features )
-{
+static LV2_Handle MidiArpLV2_instantiate(
+    const LV2_Descriptor*, double sample_rate, const char*,
+    const LV2_Feature* const* host_features) {
     return new MidiArpLV2(sample_rate, host_features);
 }
 
-static void MidiArpLV2_connect_port (
-    LV2_Handle instance, uint32_t port, void *data )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+static void MidiArpLV2_connect_port(
+    LV2_Handle instance, uint32_t port, void* data) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
     if (pPlugin)
         pPlugin->connect_port(port, data);
 }
 
-static void MidiArpLV2_run ( LV2_Handle instance, uint32_t nframes )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+static void MidiArpLV2_run(LV2_Handle instance, uint32_t nframes) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
     if (pPlugin)
         pPlugin->run(nframes);
 }
 
-static void MidiArpLV2_activate ( LV2_Handle instance )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+static void MidiArpLV2_activate(LV2_Handle instance) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
     if (pPlugin)
         pPlugin->activate();
 }
 
-static void MidiArpLV2_deactivate ( LV2_Handle instance )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+static void MidiArpLV2_deactivate(LV2_Handle instance) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
     if (pPlugin)
         pPlugin->deactivate();
 }
 
-static void MidiArpLV2_cleanup ( LV2_Handle instance )
-{
-    MidiArpLV2 *pPlugin = static_cast<MidiArpLV2 *> (instance);
+static void MidiArpLV2_cleanup(LV2_Handle instance) {
+    MidiArpLV2* pPlugin = static_cast<MidiArpLV2*> (instance);
     if (pPlugin)
         delete pPlugin;
 }
 
-static const void *MidiArpLV2_extension_data ( const char * uri)
-{
+static const void* MidiArpLV2_extension_data(const char* uri) {
     static const LV2_State_Interface state_iface =
-                { MidiArpLV2_state_save, MidiArpLV2_state_restore };
+    { MidiArpLV2_state_save, MidiArpLV2_state_restore };
     if (!strcmp(uri, LV2_STATE__interface)) {
         return &state_iface;
     }
@@ -576,7 +555,6 @@ static const LV2_Descriptor MidiArpLV2_descriptor =
     MidiArpLV2_extension_data
 };
 
-LV2_SYMBOL_EXPORT const LV2_Descriptor *lv2_descriptor ( uint32_t index )
-{
+LV2_SYMBOL_EXPORT const LV2_Descriptor* lv2_descriptor(uint32_t index) {
     return (index == 0 ? &MidiArpLV2_descriptor : NULL);
 }

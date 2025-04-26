@@ -74,20 +74,20 @@ static const mode_chords_t mode_group_chord_table[NUM_MODE_GROUPS][NUM_MODES] = 
 
 
 typedef struct mode_group_preset_s {
-   mode_groups_t group;
+   mode_extensions_t group;
    const char* presetName;
 } mode_group_preset_t;
 
 const mode_group_preset_t mode_group_presets[NUM_MODE_GROUPS] =
-{ {MODE_GROUPS_BASE,"Base"},{MODE_GROUPS_SEVENTH,"Seventh"},{MODE_GROUPS_NINTH,"Ninth"},{MODE_GROUPS_FIFTH,"Fifths"} };
+{ {MODE_EXTENSION_TRIAD,"Base"},{MODE_EXTENSION_SEVENTH,"Seventh"},{MODE_EXTENSION_NINTH,"Ninth"},{MODE_EXTENSION_FIFTH,"Fifths"} };
 
 /////////////////////////////////////////////////////////////////////////////
 // Returns the next name of the mode group
 /////////////////////////////////////////////////////////////////////////////
-const char* ArpModes::getModeGroupName(enum mode_groups_e group) {
+const char* ArpModes::getModeExtensionName(enum mode_extensions_e group) {
 
    if ((group < 0) > (group >= NUM_MODE_GROUPS)) {
-      return "Invalid Mode Group";
+      return "Invalid Mode Extension";
    }
    return (const char*)mode_group_presets[group].presetName;
 }
@@ -99,12 +99,12 @@ const char* ArpModes::getModeGroupName(enum mode_groups_e group) {
 // keySig:  key signature root
 // note:  root note of the chord 
 /////////////////////////////////////////////////////////////////////////////
-const chord_type_t ArpModes::getModeChord(scale_t scale, mode_groups_t modeGroup, uint8_t keySig, uint8_t note) {
+const chord_type_t ArpModes::getModeChord(scale_t scale, mode_extensions_t extension, uint8_t keySig, uint8_t note) {
    if (scale > SCALE_MAX_ENUM_VALUE) {
       fprintf(stderr,"ArpModes::getChordType:  Invalid scale=%d", scale);
       return CHORD_ERROR;  // invalid
    }
-   if ((modeGroup < 0) || (modeGroup >= NUM_MODE_GROUPS)) {
+   if ((extension < 0) || (extension >= NUM_MODE_GROUPS)) {
       return CHORD_ERROR;
    }
 
@@ -112,7 +112,7 @@ const chord_type_t ArpModes::getModeChord(scale_t scale, mode_groups_t modeGroup
    const mode_chords_t* pModeChords = NULL;
    int found = 0;
    for (int modeIndex = 0;modeIndex < NUM_MODES;modeIndex++) {
-      pModeChords = &mode_group_chord_table[modeGroup][modeIndex];
+      pModeChords = &mode_group_chord_table[extension][modeIndex];
       if (pModeChords->scale == scale) {
          found = 1;
          break;
@@ -120,7 +120,7 @@ const chord_type_t ArpModes::getModeChord(scale_t scale, mode_groups_t modeGroup
    }
 
    if (!found) {
-      fprintf(stderr,"ArpModes::getChordType:  Scale: %s and mode group %d match not found", SEQ_SCALE_NameGet(scale), modeGroup);
+      fprintf(stderr,"ArpModes::getChordType:  Scale: %s and mode group %d match not found", SEQ_SCALE_NameGet(scale), extension);
       return CHORD_ERROR;  // invalid      
    }
 

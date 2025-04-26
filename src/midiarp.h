@@ -26,26 +26,25 @@
 
 #include <string>
 #include "midiworker.h"
-/*!
- * @brief MIDI worker class for the Arpeggiator Module. Implements the
- * functions providing note arpeggiation.
- *
- * The parameters of MidiArp are controlled by the ArpWidget class.
- * The backend driver thread calls the Engine::echoCallback(), which will
- * query each module, in this case via
- * the MidiArp::getNextFrame() method. MidiArp will then call its
- * internal MidiArp::getNote() function which produces an array of notes
- * stored in its internal output buffer. The notes in the array depend
- * on the active MidiArp::pattern, envelope, random and groove settings.
- * The note events consist of timing information
- * (tick and length), note values and velocity values. MidiArp::getNote()
- * also advances the pattern index. Engine::tickCallback() then
- * accesses this output buffer and sends it to the backend driver. Engine
- * also calls MidiArp::handleEvent() in particular to store incoming notes
- * in its note buffer.
- */
-class MidiArp : public MidiWorker
-{
+ /*!
+  * @brief MIDI worker class for the Arpeggiator Module. Implements the
+  * functions providing note arpeggiation.
+  *
+  * The parameters of MidiArp are controlled by the ArpWidget class.
+  * The backend driver thread calls the Engine::echoCallback(), which will
+  * query each module, in this case via
+  * the MidiArp::getNextFrame() method. MidiArp will then call its
+  * internal MidiArp::getNote() function which produces an array of notes
+  * stored in its internal output buffer. The notes in the array depend
+  * on the active MidiArp::pattern, envelope, random and groove settings.
+  * The note events consist of timing information
+  * (tick and length), note values and velocity values. MidiArp::getNote()
+  * also advances the pattern index. Engine::tickCallback() then
+  * accesses this output buffer and sends it to the backend driver. Engine
+  * also calls MidiArp::handleEvent() in particular to store incoming notes
+  * in its note buffer.
+  */
+class MidiArp : public MidiWorker {
 
 private:
    int64_t nextNote[MAXCHORD]; /*!< Holds the note values to be output next
@@ -121,7 +120,7 @@ private:
     * @param velocity The associated array of velocites to be filled
     * @param length The note length for this arpeggio step
     */
-   void getNote(int64_t *tick, int64_t note[], int velocity[], int *length);
+   void getNote(int64_t* tick, int64_t note[], int velocity[], int* length);
    /**
     * @brief  returns the number of notes present at the MIDI
     * input port.
@@ -161,7 +160,7 @@ private:
     * note is marked as released. If set to 0, the note will be deleted
     *
     */
-   void removeNote(int64_t *noteptr, int64_t tick, int keep_rel);
+   void removeNote(int64_t* noteptr, int64_t tick, int keep_rel);
    /**
     * @brief Handles a released incoming note
     *
@@ -239,8 +238,8 @@ public:
 public:
    MidiArp();
    virtual ~MidiArp() {}
-   std::string stripPattern(const std::string &p_pattern);
-   void updatePattern(const std::string &);
+   std::string stripPattern(const std::string& p_pattern);
+   void updatePattern(const std::string&);
    void updateRandomTickAmp(int);
    void updateRandomVelocityAmp(int);
    void updateRandomLengthAmp(int);

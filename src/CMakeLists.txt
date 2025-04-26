@@ -156,6 +156,8 @@ if (BUILD_LV2)
         midiseq_lv2.cpp
     )
     
+    add_subdirectory(autochord)
+
     add_library (${PROJECT_NAME}_arp MODULE
       ${LV2_ARP_HEADERS}
       ${LV2_ARP_SOURCES}

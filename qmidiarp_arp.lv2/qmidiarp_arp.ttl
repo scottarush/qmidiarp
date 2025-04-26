@@ -358,6 +358,50 @@
         lv2:minimum 0 ;
         lv2:maximum 1 ;
         lv2:designation time:speed ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 31 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_STATE" ;
+        lv2:name "Autochord" ;
+        lv2:portProperty lv2:toggled, lv2:integer ;
+        lv2:default 0 ;  # 0=OFF
+        lv2:minimum 0 ;
+        lv2:maximum 3 ;  
+        lv2:designation time:speed ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 32 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_KEYSIG" ;
+        lv2:name "Autochord Key Signature" ;
+        lv2:portProperty lv2:toggled, lv2:integer ;
+        lv2:default 0 ;  # 0=C
+        lv2:minimum 0 ;
+        lv2:maximum 11;  # 11=B
+        lv2:designation time:speed ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 33 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_SCALE" ;
+        lv2:name "Autochord Scale" ;
+        lv2:portProperty lv2:toggled, lv2:integer ;
+        lv2:default 0 ;  # 0=IONIAN
+        lv2:minimum 0 ;
+        lv2:maximum 7;  #  7=LOCRIAN
+        lv2:designation time:speed ;
+    ]  , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 34 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_EXTENSIONS" ;
+        lv2:name "Autochord Extensions" ;
+        lv2:portProperty lv2:toggled, lv2:integer ;
+        lv2:default 0 ;  # 0=NONE
+        lv2:minimum 0 ;
+        lv2:maximum 3; 
+        lv2:designation time:speed ;
     ] .
 
 #presets

@@ -18,14 +18,15 @@
 
 #include "chord.h"
 
+#include "autochord.h"
 /////////////////////////////////////////////////////////////////////////////
 // Local types
 /////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-   s8   keys[6];
+   int8_t   keys[6];
    char name[7];
-} seq_chord_entry_t;
+} chord_entry_t;
 
 
 
@@ -35,7 +36,7 @@ typedef struct {
 
   // note: chords are used together with the forced-to-scale feature in seq_scale.c
   // if no key should be played, add -1
-static const seq_chord_entry_t seq_chord_table[2][32] = {
+static const chord_entry_t chord_table[2][32] = {
   {
       // 1   2   3   4   5   6     <----> (6 chars!)
       {{ 0,  4,  7, -1, -1, -1 }, "Maj.I " },
@@ -116,7 +117,7 @@ static const seq_chord_entry_t seq_chord_table[2][32] = {
 };
 
 
-static const seq_chord_entry_t seq_chord3_table[] = {
+static const chord_entry_t seq_chord3_table[] = {
    // 1   2   3   4   5   6     <----> (6 chars!)
    {{-1, -1, -1, -1, -1, -1 }, " ---- " },
    {{ 0,  7, -1, -1, -1, -1 }, "pwr5  "},
@@ -225,26 +226,15 @@ static const seq_chord_entry_t seq_chord3_table[] = {
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Initialisation
-/////////////////////////////////////////////////////////////////////////////
-s32 SEQ_CHORD_Init(u32 mode)
-{
-   // here we could also generate the chord table in RAM...
-
-   return 0; // no error
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 // returns number of available chords
 /////////////////////////////////////////////////////////////////////////////
-s32 SEQ_CHORD_NumGet(u8 chord_set)
+int32_t Chord::numGet(uint8_t chord_set)
 {
    if (chord_set == 2) {
-      return sizeof(seq_chord3_table) / sizeof(seq_chord_entry_t);
+      return sizeof(seq_chord3_table) / sizeof(chord_entry_t);
    }
    else {
-      return sizeof(seq_chord_table[0]) / sizeof(seq_chord_entry_t);
+      return sizeof(chord_table[0]) / sizeof(chord_entry_t);
    }
 }
 
@@ -253,16 +243,16 @@ s32 SEQ_CHORD_NumGet(u8 chord_set)
 // returns pointer to the name of a chord
 // Length: 6 characters + zero terminator
 /////////////////////////////////////////////////////////////////////////////
-char* SEQ_CHORD_NameGet(u8 chord_set, u8 chord_ix)
+char* Chord::nameGet(uint8_t chord_set, uint8_t chord_ix)
 {
-   if (chord_ix == 0 || chord_ix >= SEQ_CHORD_NumGet(chord_set))
+   if (chord_ix == 0 || chord_ix >= numGet(chord_set))
       return "------";
 
    if (chord_set == 2) {
       return (char*)seq_chord3_table[chord_ix].name;
    }
    else {
-      return (char*)seq_chord_table[chord_set][chord_ix].name;
+      return (char*)chord_table[chord_set][chord_ix].name;
    }
 }
 
@@ -275,7 +265,7 @@ char* SEQ_CHORD_NameGet(u8 chord_set, u8 chord_ix)
 // returns note number if >= 0
 // returns < 0 if no note defined for the given key
 /////////////////////////////////////////////////////////////////////////////
-s32 SEQ_CHORD_NoteGet(u8 key_num, u8 chord_set, u8 chord)
+int32_t Chord::noteGet(uint8_t key_num, uint8_t chord_set, uint8_t chord)
 {
    if (key_num >= 6)
       return -2; // key number too high
@@ -283,17 +273,17 @@ s32 SEQ_CHORD_NoteGet(u8 key_num, u8 chord_set, u8 chord)
    if (chord_set >= 3)
       return -3; // invalid chord set
 
-   s32 note = 0;
-   s32 oct_transpose = 0;
+   int32_t note = 0;
+   int32_t oct_transpose = 0;
 
    if (chord_set == 2) {
-      note = (s32)seq_chord3_table[chord].keys[key_num];
+      note = (int32_t)seq_chord3_table[chord].keys[key_num];
    }
    else {
-      u8 chord_ix = chord & 0x1f;
+      uint8_t chord_ix = chord & 0x1f;
       oct_transpose = (chord >> 5) - 2;
 
-      note = (s32)seq_chord_table[chord_set][chord_ix].keys[key_num];
+      note = (int32_t)chord_table[chord_set][chord_ix].keys[key_num];
    }
 
    if (note < 0)
@@ -306,7 +296,7 @@ s32 SEQ_CHORD_NoteGet(u8 key_num, u8 chord_set, u8 chord)
    note += oct_transpose * 12;
 
    // ensure that note is in the 0..127 range
-   note = SEQ_CORE_TrimNote(note, 0, 127);
+   note = AutoChord::getInstance()->trimNote(note, 0, 127);
 
    return note;
 }
@@ -317,18 +307,18 @@ s32 SEQ_CHORD_NoteGet(u8 key_num, u8 chord_set, u8 chord)
 // chord:  enum for the cord
 // oct_transpose:  octave transpose from (0 corresponds to MIDI Note# 24=C0)
 /////////////////////////////////////////////////////////////////////////////
-s32 SEQ_CHORD_NoteGetByEnum(u8 key_num, chord_type_t chord, s8 oct_transpose) {
+int32_t Chord::noteGetByEnum(uint8_t key_num, chord_type_t chord, int8_t oct_transpose) {
    if (key_num >= 6)
       return -2; // key number too high
-   s32 note = 0;
-   u8 index = chord;
-   u8 chordset = 0;
+   int32_t note = 0;
+   uint8_t index = chord;
+   uint8_t chordset = 0;
    if (chord >= CHORD_SET2_ENUM_OFFSET) {
       // This is in chord set 2
       index -= CHORD_SET2_ENUM_OFFSET;
       chordset = 1;
    }
-   note = seq_chord_table[chordset][index].keys[key_num];
+   note = chord_table[chordset][index].keys[key_num];
    if (note < 0)
       return note;  // Returns a -1 if the key isn't part of this chord
 
@@ -339,7 +329,7 @@ s32 SEQ_CHORD_NoteGetByEnum(u8 key_num, chord_type_t chord, s8 oct_transpose) {
    note += oct_transpose * 12;
 
    // ensure that note is in the 0..127 range
-   note = SEQ_CORE_TrimNote(note, 0, 127);
+   note = AutoChord::getInstance()->trimNote(note, 0, 127);
 
    return note;
 }
@@ -349,23 +339,23 @@ s32 SEQ_CHORD_NoteGetByEnum(u8 key_num, chord_type_t chord, s8 oct_transpose) {
 // chord:  enum for the cord
 
 /////////////////////////////////////////////////////////////////////////////
-const char* SEQ_CHORD_NameGetByEnum(chord_type_t chord) {
-   u8 index = chord;
-   u8 chordset = 0;
+const char* Chord::nameGetByEnum(chord_type_t chord) {
+   uint8_t index = chord;
+   uint8_t chordset = 0;
    if (chord >= CHORD_SET2_ENUM_OFFSET) {
       // This is in chord set 2
       index -= CHORD_SET2_ENUM_OFFSET;
       chordset = 1;
    }
-   return seq_chord_table[chordset][index].name;
+   return chord_table[chordset][index].name;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Added by Scott Rush to get the number of notes in the chord
 /////////////////////////////////////////////////////////////////////////////
-u8 SEQ_CHORD_GetNumNotesByEnum(chord_type_t chord) {
-   for(u8 num= 0;num < 6;num++){
-      s32 note = SEQ_CHORD_NoteGetByEnum(num,chord,0);
+uint8_t Chord::getNumNotesByEnum(chord_type_t chord) {
+   for(uint8_t num= 0;num < 6;num++){
+      int32_t note = noteGetByEnum(num,chord,0);
       if (note < 0){
          return num;
       }
