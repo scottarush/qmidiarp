@@ -118,14 +118,15 @@ const chord_type_t ArpModes::getModeChord(scale_t scale, mode_extensions_t exten
          break;
       }
    }
+   Scale* pScale = Scale::getInstance();
 
    if (!found) {
-      fprintf(stderr,"ArpModes::getChordType:  Scale: %s and mode group %d match not found", SEQ_SCALE_NameGet(scale), extension);
+      fprintf(stderr,"ArpModes::getChordType:  Scale: %s and mode group %d match not found", pScale->nameGet(scale), extension);
       return CHORD_ERROR;  // invalid      
    }
 
    // Check if key is part of mode scale.  
-   if (!SEQ_SCALE_IsNoteInScale(pModeChords->scale, keySig, note)) {
+   if (!pScale->isNoteInScale(pModeChords->scale, keySig, note)) {
 #ifdef DEBUG
       fprintf(stderr,"ArpModes::getModeChord:  note: %d in key:%d not in scale %s", note, keySig, SEQ_SCALE_NameGet(scale));
 #endif
@@ -133,7 +134,7 @@ const chord_type_t ArpModes::getModeChord(scale_t scale, mode_extensions_t exten
       return CHORD_INVALID;
    }
    // return the chord by index within the mode group by pulling the index for the scale from the SEQ_SCALE database.
-   uint8_t index = SEQ_SCALE_GetScaleIndex(pModeChords->scale, keySig, note);
+   uint8_t index = pScale->getScaleIndex(pModeChords->scale, keySig, note);
    if (index >= pModeChords->numChords){
       return CHORD_ERROR;    // Shouldn't ever happen, but need to check
    }
