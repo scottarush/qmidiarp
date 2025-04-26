@@ -81,6 +81,14 @@ typedef struct mode_group_preset_s {
 const mode_group_preset_t mode_group_presets[NUM_MODE_GROUPS] =
 { {MODE_EXTENSION_TRIAD,"Base"},{MODE_EXTENSION_SEVENTH,"Seventh"},{MODE_EXTENSION_NINTH,"Ninth"},{MODE_EXTENSION_FIFTH,"Fifths"} };
 
+
+// Declaration of singleton instance variables
+ArpModes* ArpModes::instance = nullptr;
+std::mutex ArpModes::mutex;
+
+ArpModes::ArpModes() {
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // Returns the next name of the mode group
 /////////////////////////////////////////////////////////////////////////////

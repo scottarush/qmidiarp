@@ -241,6 +241,14 @@ static const scale_entry_t scale_table[] = {
   {{            0,	3,	3,	3,	4,	5,	7,	7,	8,	9,	9,	9,	"M. Yagapriya 31     " }}
 };
 
+// Declaration of singleton instance variables
+Scale* Scale::instance = nullptr;
+std::mutex Scale::mutex;
+
+Scale::Scale(){
+  
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // returns number of available scales
 /////////////////////////////////////////////////////////////////////////////

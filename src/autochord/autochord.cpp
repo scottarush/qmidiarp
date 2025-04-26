@@ -8,6 +8,10 @@ static scale_t SCALE_INDEX_MAP[] = { SCALE_IONIAN, SCALE_DORIAN, SCALE_PHRYGIAN,
 
 static const char* SCALE_NAMES[] = { "Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian" };
 
+// Declaration of singleton instance variables
+AutoChord* AutoChord::instance = nullptr;
+std::mutex AutoChord::mutex;
+
 AutoChord::AutoChord() {
    m_state = AUTOCHORD_OFF;
    m_keySignature = KEY_C;

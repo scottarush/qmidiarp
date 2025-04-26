@@ -223,7 +223,13 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  8, 15, -1, -1 }, "7b5b9 "}, // C101
    // add additional chords here... (26 free slots)
 };
+// Declaration of singleton instance variables
+Chord* Chord::instance = nullptr;
+std::mutex Chord::mutex;
 
+Chord::Chord(){
+   
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // returns number of available chords

@@ -61,11 +61,11 @@ typedef struct {
     LV2_URID ui_up;
     LV2_URID ui_down;
     LV2_URID flip_wave;
-    // AutoChord parameter URIDs
-    LV2_URID autochordState;
-    LV2_URID autochordKeySig;
-    LV2_URID autochordScale;
-    LV2_URID autochordExtensions;
+    // See comment below
+    //  LV2_URID autochordState;
+    // LV2_URID autochordKeySig;
+    // LV2_URID autochordScale;
+    // LV2_URID autochordExtensions;
 } QMidiArpURIs;
 
 static inline void map_uris(LV2_URID_Map* urid_map, QMidiArpURIs* uris) {
@@ -91,9 +91,11 @@ static inline void map_uris(LV2_URID_Map* urid_map, QMidiArpURIs* uris) {
     uris->ui_up               = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "UI_UP");
     uris->ui_down             = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "UI_DOWN");
     uris->flip_wave           = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "FLIP_WAVE");
-    uris->autochordState      = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_STATE");
-    uris->autochordKeySig     = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_KEY_SIG");
-    uris->autochordScale      = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_SCALE");
-    uris->autochordExtensions = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_EXTENSIONS");
+    // These are only needed if we add functionality in the arp ui widget for which these uris are used to
+    // transfer data between the lv2 plugins.  
+    // uris->autochordState      = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_STATE");
+    // uris->autochordKeySig     = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_KEY_SIG");
+    // uris->autochordScale      = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_SCALE");
+    // uris->autochordExtensions = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "AUTOCHORD_EXTENSIONS");
 }
 #endif
