@@ -30,21 +30,21 @@ set (CONFIG_LIBDIR  "${CONFIG_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
 set (CONFIG_DATADIR "${CONFIG_PREFIX}/${CMAKE_INSTALL_DATADIR}")
 set (CONFIG_MANDIR  "${CONFIG_PREFIX}/${CMAKE_INSTALL_MANDIR}")
 
-option (CONFIG_APPBUILD "Build QMidiArp Application (default=yes)" 1)
+option (CONFIG_APPBUILD "Build QMidiArp Application (default=yes)" 0)
 option (CONFIG_JACK_MIDI "Enable JACK MIDI support (default=yes)" 1)
-option (CONFIG_ALSA_MIDI "Enable ALSA MIDI support (default=yes)" 1)
+option (CONFIG_ALSA_MIDI "Enable ALSA MIDI support (default=yes)" 0)
 
 # Enable LV2 plugin build.
 option (CONFIG_LV2 "Build LV2 plug-ins (default=yes)" 1)
 option (CONFIG_LV2_UI "Build LV2 plug-in UIs with Qt (default=yes)" 1)
-option (CONFIG_LV2_UI_RTK  "Build LV2 plug-in UIs with RobTk (default=yes)" 1)
+option (CONFIG_LV2_UI_RTK  "Build LV2 plug-in UIs with RobTk (default=yes)" 0)
 
 # Enable NSM support.
-option (CONFIG_NSM "Enable NSM support (default=yes)" 1)
+option (CONFIG_NSM "Enable NSM support (default=yes)" 0)
 set (APPBUILD ${CONFIG_APBUILD})
 
 # Enable translations.
-option (CONFIG_TRANSLATIONS "Build and install translations (default=no)" 1)
+option (CONFIG_TRANSLATIONS "Build and install translations (default=no)" 0)
 set (APPBUILD ${CONFIG_TRANSLATIONS})
 
 # Fix for new CMAKE_REQUIRED_LIBRARIES policy.
