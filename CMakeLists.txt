@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 project(qmidiarp VERSION 0.7.2
-        DESCRIPTION "MIDI arpeggiator, sequencer and LFO for ALSA and JACK"
+        DESCRIPTION "AUTOCHORD DEV VERSION:  MIDI arpeggiator, sequencer and LFO for ALSA and JACK"
         LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set (APP_NAME "QMidiArp")
+set (APP_NAME "QMidiArp++")
 set (PACKAGE "qmidiarp")
 set (PACKAGE_NAME "qmidiarp")
 set (PACKAGE_VERSION "${PROJECT_VERSION}")

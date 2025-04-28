@@ -69,14 +69,14 @@ public:
             PATTERN_PRESET = 23,
             TRANSPORT_MODE = 24,
             TEMPO = 25,
-            HOST_TEMPO = 26,
-            HOST_POSITION = 27,
-            HOST_SPEED = 28,
-            AUTOCHORD_STATE = 29,
-            AUTOCHORD_KEY_SIG = 30,
-            AUTOCHORD_SCALE_INDEX = 31,
-            AUTOCHORD_EXTENSIONS = 32
-        };
+            AUTOCHORD_STATE = 26,
+            AUTOCHORD_KEY_SIG = 27,
+            AUTOCHORD_SCALE = 28,
+            AUTOCHORD_EXTENSIONS = 29,
+            HOST_TEMPO = 30,
+            HOST_POSITION = 31,
+            HOST_SPEED = 32
+         };
 
         void connect_port(uint32_t port, void *data);
         void run(uint32_t nframes);

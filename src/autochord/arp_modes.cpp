@@ -79,7 +79,7 @@ typedef struct mode_group_preset_s {
 } mode_group_preset_t;
 
 const mode_group_preset_t mode_group_presets[NUM_MODE_GROUPS] =
-{ {MODE_EXTENSION_TRIAD,"Base"},{MODE_EXTENSION_SEVENTH,"Seventh"},{MODE_EXTENSION_NINTH,"Ninth"},{MODE_EXTENSION_FIFTH,"Fifths"} };
+{ {MODE_EXTENSION_NONE,"Base"},{MODE_EXTENSION_7TH,"Seventh"},{MODE_EXTENSION_9TH,"Ninth"},{MODE_EXTENSION_5TH,"Fifths"} };
 
 
 // Declaration of singleton instance variables

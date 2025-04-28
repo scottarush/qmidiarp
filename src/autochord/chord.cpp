@@ -252,7 +252,7 @@ int32_t Chord::numGet(uint8_t chord_set)
 char* Chord::nameGet(uint8_t chord_set, uint8_t chord_ix)
 {
    if (chord_ix == 0 || chord_ix >= numGet(chord_set))
-      return "------";
+      return (char *)"------";
 
    if (chord_set == 2) {
       return (char*)seq_chord3_table[chord_ix].name;

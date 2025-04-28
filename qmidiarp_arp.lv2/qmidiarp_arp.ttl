@@ -326,10 +326,76 @@
         lv2:default 120 ;
         lv2:minimum  10 ;
         lv2:maximum 400 ;
-
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 28 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_STATE" ;
+        lv2:name "Autochord" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "OFF"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "PAD"; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "ARP"; rdf:value 2 ] ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 2 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 29 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_KEYSIG" ;
+        lv2:name "Autochord Key Signature" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "C"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "C#"; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "D"; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Eb"; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "E"; rdf:value 4 ] ;
+        lv2:scalePoint [ rdfs:label "F"; rdf:value 5 ] ;
+        lv2:scalePoint [ rdfs:label "F#"; rdf:value 6 ] ;
+        lv2:scalePoint [ rdfs:label "G"; rdf:value 7 ] ;
+        lv2:scalePoint [ rdfs:label "G#"; rdf:value 8 ] ;
+        lv2:scalePoint [ rdfs:label "A"; rdf:value 9 ] ;
+        lv2:scalePoint [ rdfs:label "Bb"; rdf:value 10 ] ;
+        lv2:scalePoint [ rdfs:label "B"; rdf:value 11 ] ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 11 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 30 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_SCALE" ;
+        lv2:name "Autochord Scale" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "Ionian"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "Dorian"; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "Phrygian"; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Lydian"; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "Mixolydian"; rdf:value 4 ] ;
+        lv2:scalePoint [ rdfs:label "Aeolian"; rdf:value 5 ] ;
+        lv2:scalePoint [ rdfs:label "Locrian"; rdf:value 6 ] ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 16 ;
+    ]  , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 31 ;
+        lv2:portProperty lv2:integer ;
+        lv2:symbol "AUTOCHORD_EXTENSIONS" ;
+        lv2:name "Autochord Extensions" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "None"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "5ths"; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "7ths"; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "9ths"; rdf:value 3 ] ;
+        lv2:scalePoint [ rdfs:label "13ths"; rdf:value 4 ] ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 4 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 32 ;
         lv2:portProperty pprop:notOnGUI ;
         lv2:symbol "HOST_TEMPO" ;
         lv2:name "Host Tempo" ;
@@ -339,7 +405,7 @@
         lv2:designation time:beatsPerMinute ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 29 ;
+        lv2:index 33 ;
         lv2:portProperty pprop:notOnGUI ;
         lv2:symbol "HOST_POSITION" ;
         lv2:name "Host Position" ;
@@ -349,7 +415,7 @@
         lv2:designation time:frame ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 30 ;
+        lv2:index 34 ;
         lv2:portProperty pprop:notOnGUI ;
         lv2:symbol "HOST_SPEED" ;
         lv2:name "Host Speed (Start/Stop)" ;
@@ -357,50 +423,6 @@
         lv2:default 0 ;
         lv2:minimum 0 ;
         lv2:maximum 1 ;
-        lv2:designation time:speed ;
-    ] , [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 31 ;
-        lv2:portProperty lv2:integer ;
-        lv2:symbol "AUTOCHORD_STATE" ;
-        lv2:name "Autochord" ;
-        lv2:portProperty lv2:toggled, lv2:integer ;
-        lv2:default 0 ;  # 0=OFF
-        lv2:minimum 0 ;
-        lv2:maximum 3 ;  
-        lv2:designation time:speed ;
-    ] , [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 32 ;
-        lv2:portProperty lv2:integer ;
-        lv2:symbol "AUTOCHORD_KEYSIG" ;
-        lv2:name "Autochord Key Signature" ;
-        lv2:portProperty lv2:toggled, lv2:integer ;
-        lv2:default 0 ;  # 0=C
-        lv2:minimum 0 ;
-        lv2:maximum 11;  # 11=B
-        lv2:designation time:speed ;
-    ] , [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 33 ;
-        lv2:portProperty lv2:integer ;
-        lv2:symbol "AUTOCHORD_SCALE" ;
-        lv2:name "Autochord Scale" ;
-        lv2:portProperty lv2:toggled, lv2:integer ;
-        lv2:default 0 ;  # 0=IONIAN
-        lv2:minimum 0 ;
-        lv2:maximum 7;  #  7=LOCRIAN
-        lv2:designation time:speed ;
-    ]  , [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 34 ;
-        lv2:portProperty lv2:integer ;
-        lv2:symbol "AUTOCHORD_EXTENSIONS" ;
-        lv2:name "Autochord Extensions" ;
-        lv2:portProperty lv2:toggled, lv2:integer ;
-        lv2:default 0 ;  # 0=NONE
-        lv2:minimum 0 ;
-        lv2:maximum 3; 
         lv2:designation time:speed ;
     ] .
 

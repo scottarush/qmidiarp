@@ -265,7 +265,7 @@ int32_t Scale::numGet(void)
 char *Scale::nameGet(uint8_t scale)
 {
   if( scale >= Scale::numGet() )
-    return "Invalid Scale       ";
+    return (char*)"Invalid Scale       ";
 
   return (char *)scale_table[scale].name;
 }

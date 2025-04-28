@@ -114,6 +114,9 @@ endif ()
 #LV2 DSPs
 
 if (BUILD_LV2)
+
+  add_subdirectory(autochord)
+
     set(LV2_ARP_HEADERS
         lv2_common.h
         main.h
@@ -126,6 +129,10 @@ if (BUILD_LV2)
         midiworker.cpp
         midiarp.cpp
         midiarp_lv2.cpp
+        autochord/autochord.cpp
+        autochord/chord.cpp
+        autochord/scale.cpp
+        autochord/arp_modes.cpp
     )
     
     set(LV2_LFO_HEADERS
@@ -156,7 +163,6 @@ if (BUILD_LV2)
         midiseq_lv2.cpp
     )
     
-    add_subdirectory(autochord)
 
     add_library (${PROJECT_NAME}_arp MODULE
       ${LV2_ARP_HEADERS}

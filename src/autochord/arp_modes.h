@@ -35,10 +35,11 @@ typedef enum key_signature_e
 
 typedef enum mode_extensions_e
 {
-   MODE_EXTENSION_TRIAD = 0,
-   MODE_EXTENSION_SEVENTH = 1,
-   MODE_EXTENSION_NINTH = 2,
-   MODE_EXTENSION_FIFTH = 3
+   MODE_EXTENSION_NONE = 0,
+   MODE_EXTENSION_5TH = 1,
+   MODE_EXTENSION_7TH = 2,
+   MODE_EXTENSION_9TH = 3,
+   MODE_EXTENSION_13TH = 4
 } mode_extensions_t;
 #define NUM_MODE_GROUPS 4
 

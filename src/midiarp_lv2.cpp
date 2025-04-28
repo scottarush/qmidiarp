@@ -359,7 +359,7 @@ void MidiArpLV2::updateParams() {
     AutoChord* pachord = AutoChord::getInstance();
     pachord->setExtension((mode_extensions_t)*val[AUTOCHORD_EXTENSIONS]);
     pachord->setKeySignature((key_signature_t)*val[AUTOCHORD_KEY_SIG]);
-    pachord->setScaleIndex((uint8_t)*val[AUTOCHORD_SCALE_INDEX]);
+    pachord->setScale((autochord_lv2_scale_t)*val[AUTOCHORD_SCALE]);
     const autochord_state_t state = (autochord_state_t)*val[AUTOCHORD_STATE];
 
     if (state != pachord->getState()) {

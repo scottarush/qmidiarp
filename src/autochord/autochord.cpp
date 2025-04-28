@@ -15,8 +15,8 @@ std::mutex AutoChord::mutex;
 AutoChord::AutoChord() {
    m_state = AUTOCHORD_OFF;
    m_keySignature = KEY_C;
-   m_extension = MODE_EXTENSION_TRIAD;
-   m_scaleIndex = 0;
+   m_extension = MODE_EXTENSION_NONE;
+   m_lv2scale = AUTOCHORD_LV2_SCALE_IONIAN;
 }
 void AutoChord::setState(autochord_state_t state) {
    m_state = state;
@@ -32,11 +32,11 @@ mode_extensions_t AutoChord::getExtension() {
    return m_extension;
 }
 
-void AutoChord::setScaleIndex(uint8_t index) {
-   m_scaleIndex = index;
+void AutoChord::setScale(autochord_lv2_scale_t scale) {
+   m_lv2scale = scale;
 }
-uint8_t AutoChord::getScaleIndex() {
-   return m_scaleIndex;
+autochord_lv2_scale_t AutoChord::getScale() {
+   return m_lv2scale;
 }
 
 void AutoChord::setKeySignature(key_signature_t key) {
@@ -73,7 +73,7 @@ uint8_t AutoChord::trimNote(uint8_t note, uint8_t lower, uint8_t upper) {
 const autochord_notes_t* AutoChord::getChordNotes(uint8_t rootNote, uint8_t velocity) {
    // Lookup the chord
    const chord_type_t chord = ArpModes::getInstance()->getModeChord(
-      SCALE_INDEX_MAP[m_scaleIndex], m_extension, m_keySignature, rootNote);
+      SCALE_INDEX_MAP[(uint8_t)m_lv2scale], m_extension, m_keySignature, rootNote);
 
    if (chord == CHORD_ERROR) {
       // invalid configuration.  this is an error. Set the number of notes to zero and return
