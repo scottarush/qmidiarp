@@ -123,6 +123,10 @@ if (BUILD_LV2)
         midiworker.h
         midiarp.h
         midiarp_lv2.h
+        autochord/autochord.h
+        autochord/chord.h
+        autochord/scale.h
+        autochord/arp_modes.h
     )
     
     set(LV2_ARP_SOURCES
