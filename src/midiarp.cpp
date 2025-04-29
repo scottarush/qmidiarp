@@ -187,14 +187,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
             // Normal qmidiarp operation.
             addNote(inEv.data, inEv.value, tick);
 
-            if (repeatPatternThroughChord == 2)
-                noteOfs = noteCount - 1;
-
-            if ((trigByKbd && (getPressedNoteCount() == 1)) || trigLegato) {
-                initArpTick(tick + trigDelayTicks);
-                gotKbdTrig = true;
-            }
-            break;
+             break;
         case AUTOCHORD_PAD:
         case AUTOCHORD_ARP:
             if (state == AUTOCHORD_PAD) {
@@ -208,7 +201,18 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
             for(uint8_t keyNum=0;keyNum < pNotes->numNotes;keyNum++){
                 addNote(pNotes->notes[keyNum],pNotes->velocities[keyNum],tick);
             }
-            break;
+             break;
+        }
+        // The below conditionals were part of normal operation, but they seem to make sense
+        // for at least AUTOCHORD_OFF and AUTOCHORD_ARP mode as well.  
+
+        // TODO:  Figure out AUTOCHORD_PAD later
+        if (repeatPatternThroughChord == 2)
+            noteOfs = noteCount - 1;
+
+        if ((trigByKbd && (getPressedNoteCount() == 1)) || trigLegato) {
+            initArpTick(tick + trigDelayTicks);
+            gotKbdTrig = true;
         }
     }
     else {
