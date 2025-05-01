@@ -75,11 +75,20 @@ const autochord_notes_t* AutoChord::getChordNotes(uint8_t rootNote, uint8_t velo
    const chord_type_t chord = ArpModes::getInstance()->getModeChord(
       SCALE_INDEX_MAP[(uint8_t)m_lv2scale], m_extension, m_keySignature, rootNote);
 
-   if (chord == CHORD_ERROR) {
+   switch (chord) {
+   case CHORD_ERROR:
       // invalid configuration.  this is an error. Set the number of notes to zero and return
       chordNotes.numNotes = 0;
       return &chordNotes;
+   case CHORD_INVALID:
+      // note is not in chord.  Just return a single note
+      chordNotes.numNotes = 1;
+      chordNotes.notes[0] = rootNote;
+      chordNotes.velocities[0] = velocity;
+      return &chordNotes;
+      // drop through for valid chord
    }
+
 
    // Compute octave by subtracting C-2 (note 24)
    int8_t octave = ((rootNote - 24) / 12) - 2;

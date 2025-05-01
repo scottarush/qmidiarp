@@ -168,6 +168,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
     if (((inEv.data < indexIn[0]) || (inEv.data > indexIn[1])) || ((inEv.value < rangeIn[0]) || (inEv.value > rangeIn[1]))) {
         return (true);
     }
+    autochord_state_t state = AutoChord::getInstance()->getState();
 
     if (inEv.value) {
         // This is a NOTE ON event
@@ -181,32 +182,33 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
         }
 
         // Process the key on according to the AutoChord setting
-        autochord_state_t state = AutoChord::getInstance()->getState();
         switch (state) {
         case AUTOCHORD_OFF:
             // Normal qmidiarp operation.
             addNote(inEv.data, inEv.value, tick);
 
-             break;
+            break;
         case AUTOCHORD_PAD:
+            // TODO:  Figure out AUTOCHORD_PAD later.  Overwriting the pattern doesn't
+            // work
+        //        updatePattern("(012345)");
+            break;
         case AUTOCHORD_ARP:
-            if (state == AUTOCHORD_PAD) {
-                // for pad mode, overwrite the current pattern to a constant one
-                updatePattern("(012345)");
-            }
             AutoChord* pChord = AutoChord::getInstance();
 
             // Pull the chord notes and add them all at once to the arp in the order of the chord
-            const autochord_notes_t* pNotes = pChord->getChordNotes(inEv.data,inEv.value);
-            for(uint8_t keyNum=0;keyNum < pNotes->numNotes;keyNum++){
-                addNote(pNotes->notes[keyNum],pNotes->velocities[keyNum],tick);
+            const autochord_notes_t* pNotes = pChord->getChordNotes(inEv.data, inEv.value);
+            for (uint8_t keyNum = 0;keyNum < pNotes->numNotes;keyNum++) {
+                // Add them with a 1 count tick separation so the arpegiation direction
+                // follows the chord order
+                addNote(pNotes->notes[keyNum], pNotes->velocities[keyNum], tick + keyNum);
+
             }
-             break;
+            break;
         }
         // The below conditionals were part of normal operation, but they seem to make sense
-        // for at least AUTOCHORD_OFF and AUTOCHORD_ARP mode as well.  
+        // for both AUTOCHORD_OFF and AUTOCHORD_ARP mode as well.  
 
-        // TODO:  Figure out AUTOCHORD_PAD later
         if (repeatPatternThroughChord == 2)
             noteOfs = noteCount - 1;
 
@@ -217,32 +219,43 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
     }
     else {
         // This is a NOTE OFF event
-
-        if (!noteCount) {
-            return (false);
-        }
-        if (sustain) {
-            if (sustainBufferCount == MAXNOTES - 1)
-                purgeSustainBuffer(tick);
-            sustainBuffer[sustainBufferCount] = inEv.data;
-            sustainBufferCount++;
-            return (false);
-        }
-
-        if (latch_mode && keep_rel) {
-            if (latchBufferCount == MAXNOTES - 1)
-                purgeLatchBuffer(tick);
-            latchBuffer[latchBufferCount] = inEv.data;
-            latchBufferCount++;
-            if (latchBufferCount != noteCount) {
-                if ((uint64_t)tick > (uint64_t)(lastLatchTick + latchDelayTicks) && (latchBufferCount > 1))
-                    purgeLatchBuffer(tick);
-                lastLatchTick = tick;
+        switch (state) {
+        case AUTOCHORD_OFF:
+            if (!noteCount) {
+                return (false);
             }
-            return (false);
+            if (sustain) {
+                if (sustainBufferCount == MAXNOTES - 1)
+                    purgeSustainBuffer(tick);
+                sustainBuffer[sustainBufferCount] = inEv.data;
+                sustainBufferCount++;
+                return (false);
+            }
+
+            if (latch_mode && keep_rel) {
+                if (latchBufferCount == MAXNOTES - 1)
+                    purgeLatchBuffer(tick);
+                latchBuffer[latchBufferCount] = inEv.data;
+                latchBufferCount++;
+                if (latchBufferCount != noteCount) {
+                    if ((uint64_t)tick > (uint64_t)(lastLatchTick + latchDelayTicks) && (latchBufferCount > 1))
+                        purgeLatchBuffer(tick);
+                    lastLatchTick = tick;
+                }
+                return (false);
+            }
+
+            releaseNote(inEv.data, tick, keep_rel);
+            break;
+
+        case AUTOCHORD_PAD:
+        case AUTOCHORD_ARP:
+            // Just clear all notes from the buffer
+            clearNoteBuffer();
+
+            break;
         }
 
-        releaseNote(inEv.data, tick, keep_rel);
     }
 
     return (false);
