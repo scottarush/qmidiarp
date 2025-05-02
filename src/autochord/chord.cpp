@@ -34,12 +34,10 @@ typedef struct {
 // Local variables
 /////////////////////////////////////////////////////////////////////////////
 
-  // note: chords are used together with the forced-to-scale feature in seq_scale.c
-  // if no key should be played, add -1
-static const chord_entry_t chord_table[2][32] = {
-  {
+static const chord_entry_t chord_table[] = {
       // 1   2   3   4   5   6     <----> (6 chars!)
-      {{ 0,  4,  7, -1, -1, -1 }, "Maj.I " },
+      // 0..9
+      {{ 0,  4,  7, -1, -1, -1 }, "Maj.I " },  
       {{ 4,  7, 12, -1, -1, -1 }, "Maj.II" },
       {{ 7, 12, 16, -1, -1, -1 }, "MajIII" },
       {{ 0, -1, -1, -1, -1, -1 }, "Root  " },
@@ -49,58 +47,41 @@ static const chord_entry_t chord_table[2][32] = {
       {{ 0,  7, -1, -1, -1, -1 }, "R.+5th" },
       {{ 0,  4,  7,  9, -1, -1 }, "Maj.6 " },
       {{ 0,  4,  7, 11, -1, -1 }, "Maj.7 " },
-      {{ 0,  4,  7, 12, -1, -1 }, "Maj.8 " },
-      {{ 0,  4,  7, 14, -1, -1 }, "Maj.9 " },
+      // 10..19
+      {{ 0,  4,  7, 12, -1, -1 }, "Maj.8 " },   
+      {{ 0,  4,  7, 14, -1, -1 }, "add9  " },
+      {{ 0,  4,  7, 11, 14, -1 }, "Maj9  " },
       {{ 0,  7, 12, 16, -1, -1 }, "Maj.10" },
+      {{ 0,  4,  7, 11, 14, 17 }, "Maj11 " },
       {{ 0,  7, 12, 19, -1, -1 }, "Maj.12" },
+      {{ 0,  4,  7, 11, 14, 21 }, "Maj13 " },
       {{ 0,  5,  7, -1, -1, -1 }, "Sus.4 " },
       {{ 0,  4,  8, -1, -1, -1 }, "Maj.+ " },
-
-      {{ 0,  3,  7, -1, -1, -1 }, "Min.I " },
-      {{ 3,  7, 12, -1, -1, -1 }, "Min.II" },
+      {{ 0,  3,  7, -1, -1, -1 }, "Min.I " },   
+      // 20..29
+      {{ 3,  7, 12, -1, -1, -1 }, "Min.II" },   
       {{ 7, 12, 15, -1, -1, -1 }, "MinIII" },
-      {{ 0, -1, -1, -1, -1, -1 }, "Root  " },
-      {{ 3, -1, -1, -1, -1, -1 }, "3rdMin" },
-      {{ 7, -1, -1, -1, -1, -1 }, "5th   " },
-      {{ 0,  3, -1, -1, -1, -1 }, "R.+3rd" },
-      {{ 0,  7, -1, -1, -1, -1 }, "R.+5th" },
-      {{ 0,  3,  7,  9, -1, -1 }, "Min.6 " },
+       {{ 0,  3,  7,  9, -1, -1 }, "Min.6 " },
       {{ 0,  3,  7, 11, -1, -1 }, "Min.7 " },
       {{ 0,  3,  7, 12, -1, -1 }, "Min.8 " },
-      {{ 0,  3,  7, 14, -1, -1 }, "Min.9 " },
-      {{ 0,  7, 12, 16, -1, -1 }, "Min.10" },
+      {{ 0,  3,  7, 14, -1, -1 }, "MinAd9" },
+      {{ 0,  3,  7, 10, 14, -1 }, "Min9  " },
+      {{ 0,  7, 12, 16, -1, -1 }, "Min.10" },  
+      {{ 0,  3,  7, 10, 14, 17 }, "Min11 " },  
       {{ 0,  7, 12, 18, -1, -1 }, "Min.12" },
+      // 30..39
+      {{ 0,  3,  7, 10, 14, 21 }, "Min13 " },
       {{ 0,  3,  6,  9, -1, -1 }, "Co7   " },
-      {{ 0,  3,  8, -1, -1, -1 }, "Min.+ " }
-    }, {
-       // see http://midibox.org/forums/topic/19886-extended-chords-dominants-tensions
-       // corrected version at http://midibox.org/forums/topic/13137-midibox-seq-v4-release-feedback/?do=findComment&comment=174313
+      {{ 0,  3,  8, -1, -1, -1 }, "Min.+ " },  
        {{ 0,  7, -1, -1, -1, -1 }, "Pwr5  " },
-       {{ 0,  7, 12, -1, -1, -1 }, "Pwr8  " },
+       {{ 0,  7, 12, -1, -1, -1 }, "Pwr8  " },   
        {{ 0,  4, -1, -1, -1, -1 }, "R+mj3 " },
        {{ 0,  3, -1, -1, -1, -1 }, "R+min3" },
-       // major chords
-       {{ 0,  4,  7, -1, -1, -1 }, "Maj   " },
-       {{ 0,  5,  7, -1, -1, -1 }, "Sus4  " },
-       {{ 0,  4,  8, -1, -1, -1 }, "Maj+  " },
-       {{ 0,  4,  7,  9, -1, -1 }, "Maj6  " },
-       {{ 0,  4,  7, 11, -1, -1 }, "Maj7  " },
-       {{ 0,  4,  7, 14, -1, -1 }, "add9  " },
-       {{ 0,  4,  7, 11, 14, -1 }, "Maj9  " },
-       {{ 0,  4,  7, 11, 14, 17 }, "Maj11 " },
-       {{ 0,  4,  7, 11, 14, 21 }, "Maj13 " },
-       // minor chords
-       {{ 0,  3,  7, -1, -1, -1 }, "Min   " },
-       {{ 0,  3,  7,  9, -1, -1 }, "Min6  " },
-       {{ 0,  3,  7, 10, -1, -1 }, "Min7  " },
-       {{ 0,  3,  7, 14, -1, -1 }, "Minad9" },
-       {{ 0,  3,  7, 10, 14, -1 }, "Min9  " },
-       {{ 0,  3,  7, 10, 14, 17 }, "Min11 " },
-       {{ 0,  3,  7, 10, 14, 21 }, "Min13 " },
        // dominant chords
-       {{ 0,  4,  7, 10, -1, -1 }, "Dom7  " },
+       {{ 0,  4,  7, 10, -1, -1 }, "Dom7  " },  
        {{ 0,  5,  7, 10, -1, -1 }, "7Sus4 " },
        {{ 0,  4,  7, 10, 14, -1 }, "Dom9  " },
+       // 40..49
        {{ 0,  4,  7, 10, 14, 17 }, "Dom11 " },
        {{ 0,  4,  7, 10, 14, 21 }, "Dom13 " },
        // dominant chords with tensions
@@ -110,31 +91,18 @@ static const chord_entry_t chord_table[2][32] = {
        {{ 0,  4,  7, 10, 15, -1 }, "7#9   " },
        // diminished
        {{ 0,  3,  6, -1, -1, -1 }, "DimTri" },
-       {{ 0,  3,  6,  9, -1, -1 }, "Dim   " },
+       {{ 0,  3,  6,  9, -1, -1 }, "Dim   " },  
        // half diminished aka m7b5
-       {{ 0,  3,  6, 10, -1, -1 }, "m7b5  " },
-     }
-};
-
-
-static const chord_entry_t seq_chord3_table[] = {
-   // 1   2   3   4   5   6     <----> (6 chars!)
-   {{-1, -1, -1, -1, -1, -1 }, " ---- " },
-   {{ 0,  7, -1, -1, -1, -1 }, "pwr5  "},
-   {{ 0,  7, 12, -1, -1, -1 }, "pwr8  "},
-   {{ 0,  4,  7, -1, -1, -1 }, "Maj   "},
-   {{ 4,  7, 12, -1, -1, -1 }, "M1inv "},
-   {{ 7, 12, 16, -1, -1, -1 }, "M2inv "},
-   {{ 4, 12, 19, -1, -1, -1 }, "drp3  "},
+      {{ 0,  3,  6, 10, -1, -1 }, "m7b5  " },
+      {{ 4, 12, 19, -1, -1, -1 }, "drp3  "},
+   // 50..
    {{ 7, 12, 16, -1, -1, -1 }, "drp5  "},
    {{ 0,  7, 16, -1, -1, -1 }, "top3  "},
    {{ 0,  4,  7, 12, 16, -1 }, "MgC   "},
    {{ 0,  7, 12, 16, -1, -1 }, "MgD   "},
    {{ 0,  7, 12, 16, 19, 24 }, "MgE   "},
-   {{ 0,  4,  7, 12, 19, 24 }, "MgG   "},
-   {{ 0,  3,  7, -1, -1, -1 }, "Min   "},
-   {{ 3,  7, 12, -1, -1, -1 }, "m1inv "},
-   {{ 7, 12, 15, -1, -1, -1 }, "m2inv "},
+   {{ 0,  4,  7, 12, 19, 24 }, "MgG   "},  
+   // 60..69
    {{ 3, 12, 19, -1, -1, -1 }, "mdr3  "},
    {{ 7, 12, 15, -1, -1, -1 }, "mdr5  "},
    {{ 0,  7, 15, -1, -1, -1 }, "mtp3  "},
@@ -144,7 +112,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  7,  9, -1, -1 }, "M6r   "},
    {{ 4,  7,  9, 12, -1, -1 }, "M61   "},
    {{ 7,  9, 12, 16, -1, -1 }, "M62   "},
-   {{ 9, 12, 16, 19, -1, -1 }, "M63   "},
+   {{ 9, 12, 16, 19, -1, -1 }, "M63   "},  
+   // 70..79
    {{ 7, 16, 21, 24, -1, -1 }, "M6g2  "},
    {{ 7, 12, 16, 21, -1, -1 }, "M6g3  "},
    {{ 0,  9, 28, 31, -1, -1 }, "M6g6  "},
@@ -154,7 +123,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{10, 12, 15, 19, -1, -1 }, "m73   "},
    {{ 0,  7, 10, 15, 22, 24 }, "m7gE  "},
    {{ 0,  7, 10, 15, 19, 24 }, "m2gA  "},
-   {{ 0, 10, 15, -1, -1, -1 }, "m7g5  "},
+   {{ 0, 10, 15, -1, -1, -1 }, "m7g5  "},  
+   // 80..89
    {{ 0,  3,  7,  9, -1, -1 }, "m6r   "},
    {{ 3,  7,  9, 12, -1, -1 }, "m61   "},
    {{ 7,  9, 12, 15, -1, -1 }, "m62   "},
@@ -164,7 +134,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  9, 15, 19, 24, -1 }, "m6g6  "},
    {{ 9, 19, 24, 27, -1, -1 }, "m6g2  "},
    {{ 0,  3,  6, 10, -1, -1 }, "m7b5r "},
-   {{ 3,  6, 10, 12, -1, -1 }, "m7b51 "},
+   {{ 3,  6, 10, 12, -1, -1 }, "m7b51 "},  
+   // 90..99
    {{ 6, 10, 12, 15, -1, -1 }, "m7b52 "},
    {{10, 12, 15, 18, -1, -1 }, "m7b53 "},
    {{ 0,  7, 10, 12, -1, -1 }, "m7b5g5"},
@@ -174,7 +145,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  7, 11, -1, -1 }, "Mj7r  "},
    {{ 4,  7, 11, 12, -1, -1 }, "Mj71  "},
    {{ 7, 11, 12, 16, -1, -1 }, "Mj72  "},
-   {{11, 12, 16, 19, -1, -1 }, "Mj73  "},
+   {{11, 12, 16, 19, -1, -1 }, "Mj73  "},  
+   // 100..109
    {{ 4, 12, 19, 23, -1, -1 }, "Mj7d3 "},
    {{ 7, 12, 16, 23, -1, -1 }, "Mj7d5 "},
    {{ 0,  7, 11, 16, 19, -1 }, "Mj7g5 "},
@@ -184,7 +156,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  7, 10, -1, -1 }, "7r    "},
    {{ 4,  7, 10, 12, -1, -1 }, "71    "},
    {{ 7, 10, 12, 16, -1, -1 }, "72    "},
-   {{10, 12, 16, 19, -1, -1 }, "73    "},
+   {{10, 12, 16, 19, -1, -1 }, "73    "}, 
+   // 110..119
    {{ 0,  4, 10, 12, 16, -1 }, "7gC   "},
    {{ 0,  7, 10, 16, -1, -1 }, "7gD   "},
    {{ 0,  7, 10, 16, 19, 24 }, "7gE   "},
@@ -194,7 +167,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4, 10, -1, -1, -1 }, "7g5   "},
    {{ 0,  3,  7, 14, -1, -1 }, "m9n4  "},
    {{ 0,  3,  7, 10, 14, -1 }, "m9n5  "},
-   {{ 0,  4,  7, 14, -1, -1 }, "Mj9   "},
+   {{ 0,  4,  7, 14, -1, -1 }, "Mj9   "}, 
+   //120..129
    {{ 0,  4,  7, 11, 14, -1 }, "Mj9   "},
    {{ 0,  4,  7, 10, 14, -1 }, "9     "},
    {{ 0,  3,  7, 10, 14, 17 }, "m11   "},
@@ -204,7 +178,8 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  7, 10, 14, 21 }, "13    "},
    {{ 0,  5, 10, -1, -1, -1 }, "ply4  "},
    {{ 0,  7, 14, -1, -1, -1 }, "ply5  "},
-   {{ 0,  3,  6,  9, -1, -1 }, "dim   "},
+   {{ 0,  3,  6,  9, -1, -1 }, "dim   "},  
+   //130..139
    {{ 0,  3,  6, -1, -1, -1 }, "dm3   "},
    {{ 0,  5,  7, -1, -1, -1 }, "sus4  "},
    {{ 0,  5,  7, 10, -1, -1 }, "7sus  "},
@@ -214,14 +189,14 @@ static const chord_entry_t seq_chord3_table[] = {
    {{ 0,  4,  6, 10, -1, -1 }, "7b5   "},
    {{ 0,  4,  8, 10, -1, -1 }, "7#5   "},
    {{ 0,  4,  7, 10, 13, -1 }, "7b9   "},
-   {{ 0,  4, 10, 13, -1, -1 }, "7b9   "},
+   {{ 0,  4, 10, 13, -1, -1 }, "7b9   "},  
+   //140..146
    {{ 0,  4,  7, 10, 15, -1 }, "7#9   "},
    {{ 0,  4, 10, 15, -1, -1 }, "7#9   "},
    {{ 0,  4,  6, 13, -1, -1 }, "7b5b9 "},
    {{ 0,  4,  8, 13, -1, -1 }, "7#5b9 "},
    {{ 0,  4,  6, 15, -1, -1 }, "7b5#9 "},
-   {{ 0,  4,  8, 15, -1, -1 }, "7b5b9 "}, // C101
-   // add additional chords here... (26 free slots)
+   {{ 0,  4,  8, 15, -1, -1 }, "7b5b9 "}  
 };
 // Declaration of singleton instance variables
 Chord* Chord::instance = nullptr;
@@ -234,14 +209,9 @@ Chord::Chord(){
 /////////////////////////////////////////////////////////////////////////////
 // returns number of available chords
 /////////////////////////////////////////////////////////////////////////////
-int32_t Chord::numGet(uint8_t chord_set)
+int32_t Chord::numGet()
 {
-   if (chord_set == 2) {
-      return sizeof(seq_chord3_table) / sizeof(chord_entry_t);
-   }
-   else {
-      return sizeof(chord_table[0]) / sizeof(chord_entry_t);
-   }
+   return MAX_CHORD_TYPE_ENUM;
 }
 
 
@@ -249,16 +219,12 @@ int32_t Chord::numGet(uint8_t chord_set)
 // returns pointer to the name of a chord
 // Length: 6 characters + zero terminator
 /////////////////////////////////////////////////////////////////////////////
-char* Chord::nameGet(uint8_t chord_set, uint8_t chord_ix)
+char* Chord::nameGet(chord_type_t chord)
 {
-   if (chord_ix == 0 || chord_ix >= numGet(chord_set))
+   if ((uint32_t) chord > MAX_CHORD_TYPE_ENUM)
       return (char *)"------";
-
-   if (chord_set == 2) {
-      return (char*)seq_chord3_table[chord_ix].name;
-   }
    else {
-      return (char*)chord_table[chord_set][chord_ix].name;
+      return (char*)chord_table[chord].name;
    }
 }
 
@@ -271,26 +237,17 @@ char* Chord::nameGet(uint8_t chord_set, uint8_t chord_ix)
 // returns note number if >= 0
 // returns < 0 if no note defined for the given key
 /////////////////////////////////////////////////////////////////////////////
-int32_t Chord::noteGet(uint8_t key_num, uint8_t chord_set, uint8_t chord)
-{
+int32_t Chord::noteGet(uint8_t key_num, chord_type_t chord,uint8_t oct_transpose){
    if (key_num >= 6)
       return -2; // key number too high
 
-   if (chord_set >= 3)
-      return -3; // invalid chord set
 
    int32_t note = 0;
-   int32_t oct_transpose = 0;
-
-   if (chord_set == 2) {
-      note = (int32_t)seq_chord3_table[chord].keys[key_num];
-   }
-   else {
       uint8_t chord_ix = chord & 0x1f;
       oct_transpose = (chord >> 5) - 2;
 
-      note = (int32_t)chord_table[chord_set][chord_ix].keys[key_num];
-   }
+      note = (int32_t)chord_table[chord].keys[key_num];
+   
 
    if (note < 0)
       return note;
@@ -317,14 +274,8 @@ int32_t Chord::noteGetByEnum(uint8_t key_num, chord_type_t chord, int8_t oct_tra
    if (key_num >= 6)
       return -2; // key number too high
    int32_t note = 0;
-   uint8_t index = chord;
-   uint8_t chordset = 0;
-   if (chord >= CHORD_SET2_ENUM_OFFSET) {
-      // This is in chord set 2
-      index -= CHORD_SET2_ENUM_OFFSET;
-      chordset = 1;
-   }
-   note = chord_table[chordset][index].keys[key_num];
+
+   note = chord_table[chord].keys[key_num];
    if (note < 0)
       return note;  // Returns a -1 if the key isn't part of this chord
 
@@ -347,13 +298,7 @@ int32_t Chord::noteGetByEnum(uint8_t key_num, chord_type_t chord, int8_t oct_tra
 /////////////////////////////////////////////////////////////////////////////
 const char* Chord::nameGetByEnum(chord_type_t chord) {
    uint8_t index = chord;
-   uint8_t chordset = 0;
-   if (chord >= CHORD_SET2_ENUM_OFFSET) {
-      // This is in chord set 2
-      index -= CHORD_SET2_ENUM_OFFSET;
-      chordset = 1;
-   }
-   return chord_table[chordset][index].name;
+   return chord_table[chord].name;
 }
 
 /////////////////////////////////////////////////////////////////////////////

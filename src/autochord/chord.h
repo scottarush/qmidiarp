@@ -15,19 +15,8 @@
 #define _CHORD_H
 #include <cstdint>
 #include <mutex>
- /////////////////////////////////////////////////////////////////////////////
- // Global definitions
- /////////////////////////////////////////////////////////////////////////////
-
- /////////////////////////////////////////////////////////////////////////////
- // Global Types
- /////////////////////////////////////////////////////////////////////////////
-
- // Offset for set 2 enums in the chord_set_type_e
-#define CHORD_SET2_ENUM_OFFSET 32
-/*
- * Enum type added by Scott Rush.  The enum values are indexes into the
- * rows of the table within seq_chord.c for chord set 1.
+ /*
+*  The enum values are indexes into therows of the chord_table within chorp.cpp,
  */
 typedef enum chord_type_e
 {
@@ -42,50 +31,47 @@ typedef enum chord_type_e
    CHORD_MAJ6 = 8,
    CHORD_MAJ7 = 9,
    CHORD_MAJ8 = 10,
-   CHORD_MAJ9 = 11,
-   CHORD_MAJ10 = 12,
-   CHORD_MAJ12 = 13,
-   CHORD_SUS4 = 14,
-   CHORD_MAJ_PLUS = 15,
-   CHORD_MINOR_I = 16,
-   CHORD_MINOR_II = 17,
-   CHORD_MINOR_III = 18,
-   CHORD_MINOR_THIRD = 20,
-   CHORD_ROOT_MINOR_THIRD = 22,
-   CHORD_MIN6 = 24,
-   CHORD_MIN8 = 26,
-   CHORD_MIN10 = 28,
-   CHORD_MIN12 = 29,
-   // Not sure what 'Co7' is.
-   CHORD_MINOR_PLUS = 31,
-   // The following addition chords are from chord set 2.  The indexes
-   // are +32 (the length of the chord table)
-   // Note that only the members not already part of chord_set1 are included here
-   CHORD_POWER5 = CHORD_SET2_ENUM_OFFSET,
-   CHORD_POWER8 = CHORD_SET2_ENUM_OFFSET + 1,
-   CHORD_ADD9 = CHORD_SET2_ENUM_OFFSET + 9,
-   CHORD_MAJ11 = CHORD_SET2_ENUM_OFFSET + 11,
-   CHORD_MAJ13 = CHORD_SET2_ENUM_OFFSET + 12,
-   CHORD_MIN7 = CHORD_SET2_ENUM_OFFSET + 15,
-   CHORD_MIN_ADD9 = CHORD_SET2_ENUM_OFFSET + 16,
-   CHORD_MIN9 = CHORD_SET2_ENUM_OFFSET + 17,
-   CHORD_MIN11 = CHORD_SET2_ENUM_OFFSET + 18,
-   CHORD_MIN13 = CHORD_SET2_ENUM_OFFSET + 19,
-   CHORD_DOM7 = CHORD_SET2_ENUM_OFFSET + 20,
-   CHORD_DOM7SUS4 = CHORD_SET2_ENUM_OFFSET + 21,
-   CHORD_DOM9 = CHORD_SET2_ENUM_OFFSET + 22,
-   CHORD_DOM11 = CHORD_SET2_ENUM_OFFSET + 23,
-   CHORD_DOM13 = CHORD_SET2_ENUM_OFFSET + 24,
-   CHORD_DOM7B5 = CHORD_SET2_ENUM_OFFSET + 25,
-   CHORD_DOM7_SHARP5 = CHORD_SET2_ENUM_OFFSET + 26,
-   CHORD_DOM7B9 = CHORD_SET2_ENUM_OFFSET + 27,
-   CHORD_DOM7_SHARP9 = CHORD_SET2_ENUM_OFFSET + 28,
-   CHORD_DIM3 = CHORD_SET2_ENUM_OFFSET + 29,
-   CHORD_DIM = CHORD_SET2_ENUM_OFFSET + 30,
-   CHORD_MIN7B5 = CHORD_SET2_ENUM_OFFSET + 31,
+   CHORD_ADD9 = 11,
+   CHORD_MAJ9 = 12,
+   CHORD_MAJADD10 = 13,
+   CHORD_MAJ11 = 14,
+   CHORD_MAJADD12 = 15,
+   CHORD_MAJ13 = 16,
+   CHORD_SUS4 = 17,
+   CHORD_MAJ_PLUS = 18,
+   CHORD_MINOR_I = 19,
+   CHORD_MINOR_II = 20,
+   CHORD_MINOR_III = 21,
+   CHORD_MIN6 = 22,
+   CHORD_MIN7 = 23,
+   CHORD_MIN8 = 24,
+   CHORD_MINADD9 = 25,
+   CHORD_MIN9 = 26,
+   CHORD_MIN10 = 27,
+   CHORD_MIN11 = 28,
+   CHORD_MINADD12 = 29,
+   CHORD_MIN13 = 30,
+   CHORD_CO7 = 31,
+   CHORD_MINOR_PLUS = 32,
+   CHORD_POWER5 = 33,
+   CHORD_POWER8 =  34,
+   CHORD_DOM7 =  37,
+   CHORD_DOM7SUS4 =  38,
+   CHORD_DOM9 = 39,
+   CHORD_DOM11 = 40,
+   CHORD_DOM13 =  41,
+   CHORD_DOM7B5 =  42,
+   CHORD_DOM7_SHARP5 =  43,
+   CHORD_DOM7B9 = 44,
+   CHORD_DOM7_SHARP9 =  45,
+   CHORD_DIM3 =  46,
+   CHORD_DIM =  47,
+   CHORD_MIN7B5 =  48,
    CHORD_INVALID = 0xFE,
    CHORD_ERROR = 0xFF
 } chord_type_t;
+
+#define MAX_CHORD_TYPE_ENUM 48
 
 /////////////////////////////////////////////////////////////////////////////
 // Prototypes
@@ -106,9 +92,9 @@ public:
       return instance;
    }
 
-   int32_t numGet(uint8_t chord_set);
-   char* nameGet(uint8_t chord_set, uint8_t chord_ix);
-   int32_t noteGet(uint8_t key_num, uint8_t chord_set, uint8_t chord);
+   int32_t numGet();
+   char* nameGet( chord_type_t chord);
+   int32_t noteGet(uint8_t key_num, chord_type_t chord,uint8_t oct_transpose);
 
    int32_t noteGetByEnum(uint8_t key_num, chord_type_t chord, int8_t oct_transpose);
    const char* nameGetByEnum(chord_type_t chord);
