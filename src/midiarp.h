@@ -52,6 +52,7 @@ private:
    int nextVelocity[MAXCHORD]; /*!< Holds the associated velocities to be output next
                                    @see MidiArp::updateNotes, MidiArp::nextNote */
    uint64_t arpTick;
+
    int nextLength;
    bool chordMode;
    bool purgeReleaseFlag; /*!< Causes MidiArp::getNote() to call MidiArp::purgeReleaseNotes() */

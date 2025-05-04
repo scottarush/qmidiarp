@@ -34,58 +34,57 @@
 #define QMIDIARP_ARP_LV2_PREFIX QMIDIARP_ARP_LV2_URI "#"
 
 
-class MidiArpLV2 : public MidiArp
-{
+class MidiArpLV2 : public MidiArp {
 public:
 
-        MidiArpLV2(double sample_rate, const LV2_Feature *const *host_features);
+        MidiArpLV2(double sample_rate, const LV2_Feature* const* host_features);
 
         ~MidiArpLV2();
 
         enum FloatField {
-            ATTACK = 0,
-            RELEASE = 1,
-            RANDOM_TICK = 2,
-            RANDOM_LEN = 3,
-            RANDOM_VEL = 4,
-            CH_OUT = 5,
-            CH_IN = 6,
-            CURSOR_POS = 7, //output
-            ENABLE_RESTARTBYKBD = 8,
-            ENABLE_TRIGBYKBD = 9,
-            MUTE = 10,
-            LATCH_MODE = 11,
-            OCTAVE_MODE = 12,
-            OCTAVE_LOW = 13,
-            OCTAVE_HIGH = 14,
-            INDEX_IN1 = 15,
-            INDEX_IN2 = 16,
-            RANGE_IN1 = 17,
-            RANGE_IN2 = 18,
-            ENABLE_TRIGLEGATO = 19,
-            REPEAT_MODE = 20,
-            RPATTERNFLAG = 21,
-            DEFER = 22,
-            PATTERN_PRESET = 23,
-            TRANSPORT_MODE = 24,
-            TEMPO = 25,
-            AUTOCHORD_STATE = 26,
-            AUTOCHORD_KEY_SIG = 27,
-            AUTOCHORD_SCALE = 28,
-            AUTOCHORD_EXTENSIONS = 29,
-            HOST_TEMPO = 30,
-            HOST_POSITION = 31,
-            HOST_SPEED = 32
-         };
+                TRANSPORT_MODE = 0,
+                AUTOCHORD_STATE,
+                AUTOCHORD_KEY_SIG,
+                AUTOCHORD_SCALE,
+                AUTOCHORD_EXTENSIONS,
+                ATTACK,
+                RELEASE,
+                RANDOM_TICK,
+                RANDOM_LEN,
+                RANDOM_VEL,
+                CH_OUT,
+                CH_IN,
+                CURSOR_POS, //output1
+                ENABLE_RESTARTBYKBD,
+                ENABLE_TRIGBYKBD,
+                MUTE,
+                LATCH_MODE,
+                OCTAVE_MODE,
+                OCTAVE_LOW,
+                OCTAVE_HIGH,
+                INDEX_IN1,
+                INDEX_IN2,
+                RANGE_IN1,
+                RANGE_IN2,
+                ENABLE_TRIGLEGATO,
+                REPEAT_MODE,
+                RPATTERNFLAG,
+                DEFER,
+                PATTERN_PRESET,
+                TEMPO,
+                HOST_TEMPO,
+                HOST_POSITION,
+                HOST_SPEED
+        };
 
-        void connect_port(uint32_t port, void *data);
+        void connect_port(uint32_t port, void* data);
         void run(uint32_t nframes);
         void activate();
         void deactivate();
         void updatePosAtom(const LV2_Atom_Object* obj);
-        void updatePos(uint64_t position, float bpm, int speed, bool ignore_pos=false);
+        void updatePos(uint64_t position, float bpm, int speed, bool ignore_pos = false);
         void initTransport();
-        LV2_URID_Map *uridMap;
+        LV2_URID_Map* uridMap;
         QMidiArpURIs m_uris;
         LV2_Atom_Forge forge;
         LV2_Atom_Forge_Frame m_frame;
@@ -94,7 +93,7 @@ public:
 
 private:
 
-        float *val[33];
+        float* val[33];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t trStartingTick;
@@ -102,11 +101,11 @@ private:
         double internalTempo;
         double sampleRate;
         double tempo;
- 
+
         bool ui_up;
         bool transportAtomReceived;
         void updateParams();
-        void sendPattern(const std::string & p);
+        void sendPattern(const std::string& p);
         void forgeMidiEvent(uint32_t f, const uint8_t* const buffer, uint32_t size);
 
         uint64_t transportFramesDelta;  /**< Frames since last click start */
@@ -117,8 +116,8 @@ private:
         uint32_t evTickQueue[JQ_BUFSZ];
         int bufPtr;
 
-        LV2_Atom_Sequence *inEventBuffer;
-        const LV2_Atom_Sequence *outEventBuffer;
+        LV2_Atom_Sequence* inEventBuffer;
+        const LV2_Atom_Sequence* outEventBuffer;
 };
 
 #endif

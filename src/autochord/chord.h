@@ -67,6 +67,7 @@ typedef enum chord_type_e
    CHORD_DIM3 =  46,
    CHORD_DIM =  47,
    CHORD_MIN7B5 =  48,
+   CHORD_POWERB5 = 142,
    CHORD_INVALID = 0xFE,
    CHORD_ERROR = 0xFF
 } chord_type_t;

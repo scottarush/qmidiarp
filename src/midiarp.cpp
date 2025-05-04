@@ -168,7 +168,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
     if (((inEv.data < indexIn[0]) || (inEv.data > indexIn[1])) || ((inEv.value < rangeIn[0]) || (inEv.value > rangeIn[1]))) {
         return (true);
     }
-    autochord_state_t state = AutoChord::getInstance()->getState();
+    AutoChord* pChord = AutoChord::getInstance();
 
     if (inEv.value) {
         // This is a NOTE ON event
@@ -182,27 +182,26 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
         }
 
         // Process the key on according to the AutoChord setting
-        switch (state) {
+        switch (pChord->getState()) {
         case AUTOCHORD_OFF:
             // Normal qmidiarp operation.
             addNote(inEv.data, inEv.value, tick);
 
             break;
         case AUTOCHORD_PAD:
-            // TODO:  Figure out AUTOCHORD_PAD later.  Overwriting the pattern doesn't
-            // work
-        //        updatePattern("(012345)");
-            break;
+            // send the note pressed and return as handled
+            pChord->notePressed(inEv.data, inEv.value);
+            return false;
         case AUTOCHORD_ARP:
-            AutoChord* pChord = AutoChord::getInstance();
+            // Pass the pressed note to the Autochord object
+            pChord->notePressed(inEv.data, inEv.value);
 
-            // Pull the chord notes and add them all at once to the arp in the order of the chord
-            const autochord_notes_t* pNotes = pChord->getChordNotes(inEv.data, inEv.value);
+            // Now pull the chord notes and add them all at once to the arp in the order of the chord
+            const autochord_notes_t* pNotes = pChord->getChordNotes();
             for (uint8_t keyNum = 0;keyNum < pNotes->numNotes;keyNum++) {
                 // Add them with a 1 count tick separation so the arpegiation direction
                 // follows the chord order
                 addNote(pNotes->notes[keyNum], pNotes->velocities[keyNum], tick + keyNum);
-
             }
             break;
         }
@@ -219,7 +218,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
     }
     else {
         // This is a NOTE OFF event
-        switch (state) {
+        switch (pChord->getState()) {
         case AUTOCHORD_OFF:
             if (!noteCount) {
                 return (false);
@@ -250,7 +249,11 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel) {
 
         case AUTOCHORD_PAD:
         case AUTOCHORD_ARP:
-            // Just clear all notes from the buffer
+//            fprintf(stderr, "Note released: %d", inEv.data);
+
+            // Notify the auto chord
+            pChord->noteReleased(inEv.data, inEv.value);
+            // Just clear all notes from the buffer            
             clearNoteBuffer();
 
             break;
@@ -678,6 +681,7 @@ void MidiArp::getNextFrame(int64_t askedTick) {
     if (askedTick >= nextTick) {
         returnTick = nextTick;
         getNote(&nextTick, nextNote, nextVelocity, &nextLength);
+
         while ((l1 < MAXCHORD - 1) && (nextNote[l1] >= 0)) {
             sample.data = nextNote[l1];
             sample.value = nextVelocity[l1];

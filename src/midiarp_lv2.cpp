@@ -245,6 +245,34 @@ void MidiArpLV2::run(uint32_t nframes) {
 
 
     // MIDI Output
+    AutoChord* pChord = AutoChord::getInstance();
+    if (pChord->getState() == AUTOCHORD_PAD){
+        // For pad mode just send any pending presses or releases on forge frame 0 and return
+        if (pChord->padNoteOffPending()){
+            const autochord_notes_t* pNotes = pChord->getPadNoteOffs();
+            for(int i=0;i < pNotes->numNotes;i++){
+                unsigned char d[3];
+                d[0] = 0x80 + channelOut;
+                d[1] = pNotes->notes[i];
+                d[2] = pNotes->velocities[i];
+                forgeMidiEvent(0, d, 3);                
+            }
+            pChord->clearPadNoteOffPending();
+        }
+        if (pChord->padNoteOnPending()){
+            const autochord_notes_t* pNotes = pChord->getChordNotes();
+            for(int i=0;i < pNotes->numNotes;i++){
+                unsigned char d[3];
+                d[0] = 0x90 + channelOut;
+                d[1] = pNotes->notes[i];
+                d[2] = pNotes->velocities[i];
+                forgeMidiEvent(1, d, 3);                
+            }
+            pChord->clearPadNoteOnPending();
+        }
+        return;
+    }
+    // Otherwise handle normal Arp and AutoChord Apr modes identically
     for (uint32_t f = 0; f < nframes; f++) {
         curTick = (uint64_t)(curFrame - transportFramesDelta)
             * TPQN * tempo / 60 / sampleRate + tempoChangeTick;
