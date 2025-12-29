@@ -18,6 +18,7 @@ include $(top_srcdir)/aminclude.am
 EXTRA_DIST = Doxyfile html/qmidiarp_logo_med2.png \
 	qmidiarp.pro configure-qmake.sh install-qmake.sh \
 	CMakeLists.txt \
+	man/CMakeLists.txt examples/CMakeLists.txt \
 	qmidiarp_arp.lv2/CMakeLists.txt qmidiarp_lfo.lv2/CMakeLists.txt \
 	qmidiarp_seq.lv2/CMakeLists.txt \
 	robtk/* robtk/*/*
