@@ -295,7 +295,7 @@ if test "x$ac_lv2rtkpluginuis" = "xyes" -a "x$lv2Works" = "xyes"; then
         
         LV2_UI_RTK_CFLAGS="-g -Wall -Wno-unused-function -DHAVE_LV2_1_8 -I. $GLU_CFLAGS \
         -pthread -DHAVE_IDLE_IFACE -I. -g -Wall -Wno-unused-function -DHAVE_LV2_1_8 $LV2_CFLAGS \
-        -msse -msse2 -mfpmath=sse -ffast-math -fomit-frame-pointer -O3 -fno-finite-math-only \
+         $CFLAGS \
         -DNDEBUG -DVERSION=\\\"0.0.0\\\" -fPIC -fvisibility=hidden $CAIRO_CFLAGS $PANGO_CFLAGS \
         -DUSE_GUI_THREAD -pthread -DUINQHACK=\\\"168162529512469\\\" "
         
