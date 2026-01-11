@@ -1,5 +1,5 @@
 DEFINES += PACKAGE='\\"qmidiarp\\"'
-DEFINES += PACKAGE_VERSION='\\"0.7.3\\"'
+DEFINES += PACKAGE_VERSION='\\"0.7.4\\"'
 DEFINES += APP_NAME='\\"QMidiArp\\"'
 
 QT += core gui widgets
