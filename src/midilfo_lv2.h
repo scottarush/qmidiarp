@@ -75,7 +75,8 @@ public:
             WaveOut = 30,
             HOST_TEMPO = 31,
             HOST_POSITION = 32,
-            HOST_SPEED = 33
+            HOST_SPEED = 33,
+            TEMPO_MODE = 34
         };
 
         void connect_port(uint32_t port, void *data);
@@ -96,7 +97,7 @@ public:
 
 private:
 
-        float *val[35];
+        float *val[36];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t curTick;
@@ -117,6 +118,7 @@ private:
         float transportBpm;
         float transportSpeed;
         bool hostTransport;
+        bool tempoFromHost; /**< 0: Internal, 1: Host */
 
         LV2_Atom_Sequence *inEventBuffer;
         const LV2_Atom_Sequence *outEventBuffer;

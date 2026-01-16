@@ -75,7 +75,8 @@ public:
             HOST_TEMPO = 30,
             HOST_POSITION = 31,
             HOST_SPEED = 32,
-            DISPLAY_ZOOM = 33
+            DISPLAY_ZOOM = 33,
+            TEMPO_MODE = 34
         };
 
         void connect_port(uint32_t port, void *data);
@@ -92,7 +93,7 @@ public:
 
 private:
 
-        float *val[35];
+        float *val[36];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t curTick;
@@ -117,6 +118,7 @@ private:
         float transportBpm;
         float transportSpeed;
         bool hostTransport;
+        bool tempoFromHost; /**< 0: Internal, 1: Host */
         uint32_t evQueue[JQ_BUFSZ];
         uint64_t evTickQueue[JQ_BUFSZ];
         int bufPtr;

@@ -105,8 +105,6 @@ void MidiArpLV2::connect_port ( uint32_t port, void *seqdata )
 
 void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj)
 {
-    if (!hostTransport) return;
-
     QMidiArpURIs* const uris = &m_uris;
 
     uint64_t pos1 = transportFramesDelta;
@@ -133,28 +131,34 @@ void MidiArpLV2::updatePosAtom(const LV2_Atom_Object* obj)
 
 void MidiArpLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
 {
-    if (transportBpm != bpm) {
-        /* Tempo changed */
-        transportBpm = bpm;
-        tempo = transportBpm;
-        transportSpeed = 0;
+    
+    transportBpm = bpm;
+
+    if (hostTransport || tempoFromHost) {
+        if (tempo != bpm) {
+            /* Tempo changed */
+            tempo = transportBpm;
+            initTransport();
+        }
     }
-
-    if (!ignore_pos) {
-        const float frames_per_beat = 60.0f / transportBpm * sampleRate;
-        transportFramesDelta = pos;
-        tempoChangeTick = pos * TPQN / frames_per_beat;
-    }    
-    if (transportSpeed != speed) {
-        /* Speed changed, e.g. 0 (stop) to 1 (play) */
-        transportSpeed = speed;
-        if (transportSpeed) {
-            curFrame = transportFramesDelta;
-            foldReleaseTicks(trStartingTick - tempoChangeTick);
-            setNextTick(tempoChangeTick);
-        } 
-
-        trStartingTick = tempoChangeTick;
+    if (hostTransport) {
+        transportSpeed = 0;
+        if (!ignore_pos) {
+            const float frames_per_beat = 60.0f / transportBpm * sampleRate;
+            transportFramesDelta = pos;
+            tempoChangeTick = pos * TPQN / frames_per_beat;
+        }    
+        if (transportSpeed != speed) {
+            /* Speed changed, e.g. 0 (stop) to 1 (play) */
+            transportSpeed = speed;
+            if (transportSpeed) {
+                curFrame = transportFramesDelta;
+                foldReleaseTicks(trStartingTick - tempoChangeTick);
+                setNextTick(tempoChangeTick);
+            } 
+    
+            trStartingTick = tempoChangeTick;
+        }
     }
 }
 
@@ -179,7 +183,7 @@ void MidiArpLV2::run ( uint32_t nframes )
                 /* interpret atom-objects: */
                 if (obj->body.otype == uris->time_Position) {
                     /* Received position information, update */
-                    if (hostTransport) updatePosAtom(obj);
+                    updatePosAtom(obj);
                 }
                 else if (obj->body.otype == uris->ui_up) {
                     /* UI was activated */
@@ -365,11 +369,21 @@ void MidiArpLV2::updateParams()
 
     if (internalTempo != *val[TEMPO]) {
         internalTempo = *val[TEMPO];
+        if (!hostTransport) {
+            initTransport();
+        }
+    }
+
+    if (tempoFromHost != (bool)(*val[TEMPO_MODE])) {
+        tempoFromHost = (bool)(*val[TEMPO_MODE]);
         initTransport();
     }
 
     if (hostTransport != (bool)(*val[TRANSPORT_MODE])) {
         hostTransport = (bool)(*val[TRANSPORT_MODE]);
+        if (hostTransport) {
+            tempoFromHost = true;
+        }
         initTransport();
     }
 
@@ -383,11 +397,16 @@ void MidiArpLV2::updateParams()
 
 void MidiArpLV2::initTransport()
 {
+    if (tempoFromHost) {
+        tempo = transportBpm;
+    }
+    else {
+        tempo = internalTempo;
+    }
+    
     if (!hostTransport) {
         transportFramesDelta = curFrame;
         if (curTick > 0) tempoChangeTick = curTick;
-        transportBpm = internalTempo;
-        tempo = internalTempo;
         transportSpeed = 1;
     }
     else transportSpeed = 0;

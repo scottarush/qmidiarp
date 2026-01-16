@@ -72,7 +72,8 @@ class ArpWidgetLV2 : public ArpWidget
             TEMPO = 27,
             HOST_TEMPO = 28,
             HOST_POSITION = 29,
-            HOST_SPEED = 30
+            HOST_SPEED = 30,
+            TEMPO_MODE = 31
     };
 
     ArpWidgetLV2(
@@ -106,6 +107,7 @@ class ArpWidgetLV2 : public ArpWidget
     LV2UI_Controller     m_controller;
     LV2UI_Write_Function writeFunction;
     QCheckBox* transportBox;
+    QCheckBox* tempoModeBox;
     QSpinBox* tempoSpin;
     QMidiArpURIs m_uris;
     LV2_Atom_Forge forge;

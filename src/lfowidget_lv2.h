@@ -76,7 +76,8 @@ class LfoWidgetLV2 : public LfoWidget
             WaveOut = 32,
             HOST_TEMPO = 33,
             HOST_POSITION = 34,
-            HOST_SPEED = 35
+            HOST_SPEED = 35,
+            TEMPO_MODE = 36
         };
 
     LfoWidgetLV2(
@@ -113,6 +114,7 @@ class LfoWidgetLV2 : public LfoWidget
     LV2UI_Write_Function writeFunction;
     QVector<Sample> data1;
     QCheckBox* transportBox;
+    QCheckBox* tempoModeBox;
     QSpinBox* tempoSpin;
     QMidiArpURIs m_uris;
     LV2_Atom_Forge forge;

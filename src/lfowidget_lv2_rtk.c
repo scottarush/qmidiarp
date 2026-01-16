@@ -246,7 +246,19 @@ static bool update_range_in1 (RobWidget *widget, void* data)
 static bool update_transport (RobWidget *widget, void* data)
 {
     QMidiArpLfoUI* ui = (QMidiArpLfoUI*) data;
-    updateParam(ui, TRANSPORT_MODE, robtk_cbtn_get_active(ui->btn_transport));
+    bool act = robtk_cbtn_get_active(ui->btn_transport);
+    if (act) {
+      robtk_cbtn_set_active(ui->btn_tempo_mode, true);
+    }
+    robtk_cbtn_set_sensitive(ui->btn_tempo_mode, !act);
+    updateParam(ui, TRANSPORT_MODE, act);
+    return TRUE;
+}
+
+static bool update_tempo_mode (RobWidget *widget, void* data)
+{
+    QMidiArpLfoUI* ui = (QMidiArpLfoUI*) data;
+    updateParam(ui, TEMPO_MODE, robtk_cbtn_get_active(ui->btn_tempo_mode));
     return TRUE;
 }
 
@@ -940,13 +952,21 @@ static void in_out_box_new(QMidiArpLfoUI* ui)
 
 // Transport controls
 
-  // Host / Internal transport
+  // Internal / Host transport
   ui->btn_transport = robtk_cbtn_new("Host transport", GBT_LED_LEFT, false);
   robtk_cbtn_set_color_on(ui->btn_transport, .7, .5, .2);
   robtk_cbtn_set_color_off(ui->btn_transport, .1, .1, .3);
   robtk_cbtn_set_callback(ui->btn_transport, update_transport, ui);
 
-  robtk_cbtn_set_active(ui->btn_transport, true);
+  robtk_cbtn_set_active(ui->btn_transport, false);
+  
+  // Internal / Host tempo
+  ui->btn_tempo_mode = robtk_cbtn_new("Tempo from host", GBT_LED_LEFT, false);
+  robtk_cbtn_set_color_on(ui->btn_tempo_mode, .2, .8, .5);
+  robtk_cbtn_set_color_off(ui->btn_tempo_mode, .1, .1, .3);
+  robtk_cbtn_set_callback(ui->btn_tempo_mode, update_tempo_mode, ui);
+
+  robtk_cbtn_set_active(ui->btn_tempo_mode, true);
   
   ui->lbl_tempo = robtk_lbl_new("Tempo");
   ui->spb_tempo = robtk_spin_new(5, 200, 1);
@@ -1003,6 +1023,8 @@ static void in_out_box_new(QMidiArpLfoUI* ui)
   row++;
   // Transport
   TBLADD(robtk_cbtn_widget(ui->btn_transport), 0, 2, row, row+1);
+  row++;
+  TBLADD(robtk_cbtn_widget(ui->btn_tempo_mode), 0, 2, row, row+1);
   row++;
   TBLADD(robtk_lbl_widget(ui->lbl_tempo), 0, 1, row, row+1);
   TBLADD(robtk_spin_widget(ui->spb_tempo), 1, 2, row, row+1);
@@ -1610,6 +1632,9 @@ port_event(LV2UI_Handle handle,
           break;
           case TEMPO:
                   robtk_spin_set_value(ui->spb_tempo, (int)fValue);
+          break;
+          case TEMPO_MODE:
+                  robtk_cbtn_set_active(ui->btn_tempo_mode, (fValue > 0));
           break;
           default:
           break;

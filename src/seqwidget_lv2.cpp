@@ -61,17 +61,29 @@ SeqWidgetLV2::SeqWidgetLV2 (
     QLabel *transportBoxLabel = new QLabel(tr("&Sync with Host"),this);
     transportBoxLabel->setBuddy(transportBox);
     transportBox->setToolTip(tr("Sync to Transport from Host"));
+    
+    tempoModeBox = new QCheckBox(this);
+    QLabel *tempoModeBoxLabel = new QLabel(tr("&Tempo from Host"),this);
+    tempoModeBoxLabel->setBuddy(tempoModeBox);
+    tempoModeBox->setToolTip(tr("Let Host set tempo"));
+    
     tempoSpin = new QSpinBox(this);
     tempoSpin->setRange(10, 400);
     tempoSpin->setValue(120);
     tempoSpin->setKeyboardTracking(false);
     tempoSpin->setToolTip(tr("Tempo of internal clock"));
+
     connect(transportBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
     connect(transportBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
+    connect(tempoModeBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
+    connect(tempoModeBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
     transportBox->setChecked(true);
+    tempoModeBox->setChecked(true);
 
     inOutBoxWidget->layout()->addWidget(transportBoxLabel);
     inOutBoxWidget->layout()->addWidget(transportBox);
+    inOutBoxWidget->layout()->addWidget(tempoModeBoxLabel);
+    inOutBoxWidget->layout()->addWidget(tempoModeBox);
     inOutBoxWidget->layout()->addWidget(tempoSpin);
 
     connect(velocity,           SIGNAL(valueChanged(int)), this, SLOT(mapParam(int)));
@@ -232,6 +244,9 @@ void SeqWidgetLV2::port_event ( uint32_t port_index,
             case TRANSPORT_MODE:
                     transportBox->setChecked((bool)fValue);
             break;
+            case TEMPO_MODE:
+                    tempoModeBox->setChecked((bool)fValue);
+            break;
             case TEMPO:
                     tempoSpin->setValue((int)fValue);
             break;
@@ -325,7 +340,14 @@ void SeqWidgetLV2::mapBool(bool on)
     else if (enableTrigLegato == sender())      updateParam(ENABLE_TRIGLEGATO, value);
     else if (recordAction == sender())          updateParam(RECORD, value);
     else if (deferChangesAction == sender())    updateParam(DEFER, value);
-    else if (transportBox == sender())          updateParam(TRANSPORT_MODE, value);
+    else if (transportBox == sender()) {
+        if (on) {
+            tempoModeBox->setChecked(true);
+        }
+        tempoModeBox->setEnabled(!on);
+        updateParam(TRANSPORT_MODE, value);
+    }
+    else if (tempoModeBox == sender())          updateParam(TEMPO_MODE, value);
 }
 
 void SeqWidgetLV2::mapMouse(double mouseX, double mouseY, int buttons, int pressed)

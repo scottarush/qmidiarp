@@ -115,8 +115,6 @@ void MidiSeqLV2::connect_port ( uint32_t port, void *seqdata )
 
 void MidiSeqLV2::updatePosAtom(const LV2_Atom_Object* obj)
 {
-    if (!hostTransport) return;
-
     QMidiArpURIs* const uris = &m_uris;
 
     uint64_t pos1 = transportFramesDelta;
@@ -143,28 +141,34 @@ void MidiSeqLV2::updatePosAtom(const LV2_Atom_Object* obj)
 
 void MidiSeqLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
 {
-    if (transportBpm != bpm) {
-        /* Tempo changed */
-        transportBpm = bpm;
-        tempo = transportBpm;
-        transportSpeed = 0;
-    }
+    
+    transportBpm = bpm;
 
-    if (!ignore_pos && (transportBpm > 0)) {
-        const float frames_per_beat = 60.0f / transportBpm * sampleRate;
-        transportFramesDelta = pos;
-        tempoChangeTick = pos * TPQN / frames_per_beat;
-    }
-    if (transportSpeed != speed) {
-        /* Speed changed, e.g. 0 (stop) to 1 (play) */
-        transportSpeed = speed;
-        curFrame = transportFramesDelta;
-        if (transportSpeed) {
-            setNextTick(tempoChangeTick);
+    if (hostTransport || tempoFromHost) {
+        if (tempo != bpm) {
+            /* Tempo changed */
+            tempo = transportBpm;
+            initTransport();
         }
     }
-    //printf("transportBpm %f, transportFramesDelta %d\n", transportBpm, transportFramesDelta);
+    if (hostTransport) {
+        transportSpeed = 0;
+        if (!ignore_pos) {
+            const float frames_per_beat = 60.0f / transportBpm * sampleRate;
+            transportFramesDelta = pos;
+            tempoChangeTick = pos * TPQN / frames_per_beat;
+        }    
+        if (transportSpeed != speed) {
+            /* Speed changed, e.g. 0 (stop) to 1 (play) */
+            transportSpeed = speed;
+            curFrame = transportFramesDelta;
+            if (transportSpeed) {
+                setNextTick(tempoChangeTick);
+            }     
+        }
+    }
 }
+
 
 void MidiSeqLV2::run (uint32_t nframes )
 {
@@ -185,7 +189,7 @@ void MidiSeqLV2::run (uint32_t nframes )
                 const LV2_Atom_Object* obj = (LV2_Atom_Object*)&event->body;
                 if (obj->body.otype == uris->time_Position) {
                     /* Received position information, update */
-                    if (hostTransport) updatePosAtom(obj);
+                    updatePosAtom(obj);
                 }
                 else if (obj->body.otype == uris->ui_up) {
                     /* UI was activated */
@@ -376,12 +380,22 @@ void MidiSeqLV2::updateParams()
 
     if (internalTempo != *val[TEMPO]) {
         internalTempo = *val[TEMPO];
+        if (!hostTransport) {
+            initTransport();
+        }
+    }
+
+    if (tempoFromHost != (bool)(*val[TEMPO_MODE])) {
+        tempoFromHost = (bool)(*val[TEMPO_MODE]);
         initTransport();
     }
 
     if (hostTransport != (bool)(*val[TRANSPORT_MODE])) {
         hostTransport = (bool)(*val[TRANSPORT_MODE]);
-        initTransport();
+        if (hostTransport) {
+            tempoFromHost = true;
+        }
+         initTransport();
     }
 
     if (hostTransport && !transportAtomReceived) {
@@ -401,11 +415,16 @@ void MidiSeqLV2::updateParams()
 
 void MidiSeqLV2::initTransport()
 {
+    if (tempoFromHost) {
+        tempo = transportBpm;
+    }
+    else {
+        tempo = internalTempo;
+    }
+    
     if (!hostTransport) {
         transportFramesDelta = curFrame;
         if (curTick > 0) tempoChangeTick = curTick;
-        transportBpm = internalTempo;
-        tempo = internalTempo;
         transportSpeed = 1;
     }
     else transportSpeed = 0;

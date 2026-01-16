@@ -60,17 +60,29 @@ ArpWidgetLV2::ArpWidgetLV2 (
     QLabel *transportBoxLabel = new QLabel(tr("&Sync with Host"),this);
     transportBoxLabel->setBuddy(transportBox);
     transportBox->setToolTip(tr("Sync to Transport from Host"));
+    
+    tempoModeBox = new QCheckBox(this);
+    QLabel *tempoModeBoxLabel = new QLabel(tr("&Tempo from Host"),this);
+    tempoModeBoxLabel->setBuddy(tempoModeBox);
+    tempoModeBox->setToolTip(tr("Let Host set tempo"));
+    
     tempoSpin = new QSpinBox(this);
     tempoSpin->setRange(10, 400);
     tempoSpin->setValue(120);
     tempoSpin->setKeyboardTracking(false);
     tempoSpin->setToolTip(tr("Tempo of internal clock"));
+    
     connect(transportBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
     connect(transportBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
-    transportBox->setChecked(true);
+    connect(tempoModeBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
+    connect(tempoModeBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
+    transportBox->setChecked(false);
+    tempoModeBox->setChecked(true);
 
     inOutBoxWidget->layout()->addWidget(transportBoxLabel);
     inOutBoxWidget->layout()->addWidget(transportBox);
+    inOutBoxWidget->layout()->addWidget(tempoModeBoxLabel);
+    inOutBoxWidget->layout()->addWidget(tempoModeBox);
     inOutBoxWidget->layout()->addWidget(tempoSpin);
 
     connect(attackTime,         SIGNAL(valueChanged(int)), this, SLOT(mapParam(int)));
@@ -219,6 +231,9 @@ void ArpWidgetLV2::port_event ( uint32_t port_index,
             break;
             case TRANSPORT_MODE:
                     transportBox->setChecked((bool)fValue);
+            break;
+            case TEMPO_MODE:
+                    tempoModeBox->setChecked((bool)fValue);
             break;
             case TEMPO:
                     tempoSpin->setValue((int)fValue);
@@ -415,7 +430,14 @@ void ArpWidgetLV2::mapBool(bool on)
     }
     else if (deferChangesAction == sender())    updateParam(DEFER, value);
     else if (latchModeAction == sender())       updateParam(LATCH_MODE, value);
-    else if (transportBox == sender())          updateParam(TRANSPORT_MODE, value);
+    else if (transportBox == sender()) {
+        if (on) {
+            tempoModeBox->setChecked(true);
+        }
+        tempoModeBox->setEnabled(!on);
+        updateParam(TRANSPORT_MODE, value);
+    }
+    else if (tempoModeBox == sender())          updateParam(TEMPO_MODE, value);
     else if (enableRestartByKbd == sender())    updateParam(ENABLE_RESTARTBYKBD, value);
     else if (enableTrigByKbd == sender())       updateParam(ENABLE_TRIGBYKBD, value);
     else if (enableTrigLegato == sender())      updateParam(ENABLE_TRIGLEGATO, value);

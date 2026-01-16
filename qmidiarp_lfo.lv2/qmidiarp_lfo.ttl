@@ -368,9 +368,20 @@
         lv2:portProperty lv2:enumeration, lv2:integer ;
         lv2:scalePoint [ rdfs:label "Free"; rdf:value 0 ] ;
         lv2:scalePoint [ rdfs:label "Host Transport"; rdf:value 1 ] ;
-        lv2:default 1.0 ;
+        lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 1.0 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 36 ;
+        lv2:symbol "TEMPO_MODE" ;
+        lv2:name "Use Tempo From Host" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "Host"; rdf:value 1 ] ;
+        lv2:default 1 ;
+        lv2:minimum 0 ;
+        lv2:maximum 1 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 31 ;

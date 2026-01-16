@@ -81,7 +81,8 @@ enum PortIndex {
             WaveOut = 32,
             HOST_TEMPO = 33,
             HOST_POSITION = 34,
-            HOST_SPEED = 35
+            HOST_SPEED = 35,
+            TEMPO_MODE = 36
         };
 
 #define RTK_URI QMIDIARP_LFO_LV2_URI "#"
@@ -166,7 +167,7 @@ typedef struct {
   RobTkCBtn *btn_mute, *btn_restartkbd, *btn_triglegato, *btn_trigkbd;
   RobTkCBtn *btn_noteoff;
 
-  RobTkCBtn *btn_transport;
+  RobTkCBtn *btn_transport, *btn_tempo_mode;;
   RobTkLbl  *lbl_tempo;
   RobTkSpin *spb_tempo;
   RobWidget *hbox, *ctable_spin;

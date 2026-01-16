@@ -79,7 +79,8 @@ class SeqWidgetLV2 : public SeqWidget
             HOST_TEMPO = 32,
             HOST_POSITION = 33,
             HOST_SPEED = 34,
-            DISPLAY_ZOOM = 35
+            DISPLAY_ZOOM = 35,
+            TEMPO_MODE = 36
     };
 
     SeqWidgetLV2(
@@ -114,6 +115,7 @@ class SeqWidgetLV2 : public SeqWidget
     LV2UI_Controller     m_controller;
     LV2UI_Write_Function writeFunction;
     QVector<Sample> data1;
+    QCheckBox* tempoModeBox;
     QCheckBox* transportBox;
     QSpinBox* tempoSpin;
     QMidiArpURIs m_uris;
