@@ -785,7 +785,8 @@ static bool expose_event(RobWidget* handle, cairo_t* cr, cairo_rectangle_t *ev)
       cairo_line_to(cr, xpos, ypos + 2);
       cairo_stroke(cr);
     }
-  cairo_restore(cr);
+    cairo_restore(cr);
+    ui->wave_drawn = true;
   }
   expose_cursor(handle, cr);
   ui->draw_only_cursor = false;
@@ -1314,6 +1315,7 @@ instantiate(
 
   ui->uiIsUp = false;
   ui->draw_only_cursor = false;
+  ui->wave_drawn = false;
 
 
   for (int i = 0; features[i]; ++i) {
@@ -1564,7 +1566,7 @@ port_event(LV2UI_Handle handle,
           case CURSOR_POS:
                   if (ui->currentIndex != (int)fValue) {
                     ui->currentIndex = (int)fValue;
-                    if (ui->mouse_pressed == 0) ui->draw_only_cursor = true;
+                    if (ui->mouse_pressed == 0 && ui->wave_drawn) ui->draw_only_cursor = true;
                     queue_draw_area(ui->darea, 0, SEQSCR_MIN_H, DAWIDTH, 
                                         CSR_MIN_H + CSR_VMARG);
                   }

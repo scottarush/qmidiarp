@@ -146,6 +146,7 @@ typedef struct {
   bool isMuted;
   
   bool draw_only_cursor;
+  bool wave_drawn;
 
 // these two replace the Sample vectors (sequence or lfo wave)
 // ! when datavalue is negative the point is muted ! 
