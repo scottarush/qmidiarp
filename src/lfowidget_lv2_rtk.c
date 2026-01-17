@@ -957,8 +957,6 @@ static void in_out_box_new(QMidiArpLfoUI* ui)
   robtk_cbtn_set_color_on(ui->btn_transport, .7, .5, .2);
   robtk_cbtn_set_color_off(ui->btn_transport, .1, .1, .3);
   robtk_cbtn_set_callback(ui->btn_transport, update_transport, ui);
-
-  robtk_cbtn_set_active(ui->btn_transport, false);
   
   // Internal / Host tempo
   ui->btn_tempo_mode = robtk_cbtn_new("Tempo from host", GBT_LED_LEFT, false);
@@ -967,6 +965,7 @@ static void in_out_box_new(QMidiArpLfoUI* ui)
   robtk_cbtn_set_callback(ui->btn_tempo_mode, update_tempo_mode, ui);
 
   robtk_cbtn_set_active(ui->btn_tempo_mode, true);
+  robtk_cbtn_set_active(ui->btn_transport, false);
   
   ui->lbl_tempo = robtk_lbl_new("Tempo");
   ui->spb_tempo = robtk_spin_new(5, 200, 1);

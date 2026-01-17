@@ -168,7 +168,7 @@ typedef struct {
   RobTkCBtn *btn_mute, *btn_restartkbd, *btn_triglegato, *btn_trigkbd;
   RobTkCBtn *btn_notein, *btn_velin, *btn_noteoff;
 
-  RobTkCBtn *btn_transport, *btn_tempo_mode;;
+  RobTkCBtn *btn_transport, *btn_tempo_mode;
   RobTkLbl  *lbl_tempo;
   RobTkSpin *spb_tempo;
   RobWidget *hbox, *ctable_spin;
