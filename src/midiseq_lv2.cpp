@@ -427,9 +427,10 @@ void MidiSeqLV2::initTransport()
         if (curTick > 0) tempoChangeTick = curTick;
         transportSpeed = 1;
     }
-    else transportSpeed = 0;
-
-    setNextTick(tempoChangeTick);
+    else {
+        transportSpeed = 0;
+        setNextTick(tempoChangeTick);
+    }
 }
 
 void MidiSeqLV2::sendWave()

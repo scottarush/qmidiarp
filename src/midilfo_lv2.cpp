@@ -403,11 +403,12 @@ void MidiLfoLV2::initTransport()
         if (curTick > 0) tempoChangeTick = curTick;
         transportSpeed = 1;
     }
-    else transportSpeed = 0;
-    
-    setNextTick(tempoChangeTick);
-    getNextFrame(tempoChangeTick);
-    inLfoFrame = 0;
+    else {
+        transportSpeed = 0;
+        setNextTick(tempoChangeTick);
+        getNextFrame(tempoChangeTick);
+        inLfoFrame = 0;
+    }
 }
 
 void MidiLfoLV2::sendWave()
