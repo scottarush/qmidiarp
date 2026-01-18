@@ -1418,6 +1418,7 @@ in_out_box_destroy(QMidiArpSeqUI *ui)
   robtk_lbl_destroy(ui->lbl_ch_in);
   robtk_lbl_destroy(ui->lbl_ch_out);
 
+  robtk_cbtn_destroy(ui->btn_tempo_mode);
   robtk_cbtn_destroy(ui->btn_transport);
   robtk_spin_destroy(ui->spb_tempo);
   robtk_lbl_destroy(ui->lbl_tempo);
