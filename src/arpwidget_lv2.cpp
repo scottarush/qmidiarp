@@ -79,6 +79,8 @@ ArpWidgetLV2::ArpWidgetLV2 (
     transportBox->setChecked(false);
     tempoModeBox->setChecked(true);
 
+    enableTrigByKbd->setChecked(true);
+
     inOutBoxWidget->layout()->addWidget(transportBoxLabel);
     inOutBoxWidget->layout()->addWidget(transportBox);
     inOutBoxWidget->layout()->addWidget(tempoModeBoxLabel);

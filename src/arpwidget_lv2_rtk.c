@@ -1040,6 +1040,8 @@ static void in_out_box_new(QMidiArpArpUI* ui)
   robtk_cbtn_set_callback(ui->btn_trigkbd, update_trigkbd, ui);
   robtk_cbtn_set_callback(ui->btn_triglegato, update_triglegato, ui);
 
+  robtk_cbtn_set_active(ui->btn_trigkbd, true);
+
   // ChannelIn selectbox (combobox)
 
   ui->lbl_ch_in = robtk_lbl_new("Ch");
