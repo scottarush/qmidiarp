@@ -67,7 +67,7 @@ qmidiarp_SOURCES = \
 	slider.cpp slider.h \
 	storagebutton.cpp storagebutton.h
 
-qmidiarp_CXXFLAGS = $(AM_CXXFLAGS) -DAPPBUILD -Wno-deprecated-copy
+qmidiarp_CXXFLAGS = $(AM_CXXFLAGS) -DAPPBUILD -Wno-deprecated-copy -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT $(TRANSLATION_DEFS) 
 qmidiarp_LDFLAGS =  -Wl,--as-needed
 qmidiarp_LDADD = $(LIBS_APP) $(Qt5_LIBS) $(Qt6_LIBS)
 
@@ -90,7 +90,8 @@ qmidiarp_lfo_la_SOURCES = \
 	midilfo.cpp midilfo.h \
 	midilfo_lv2.cpp midilfo_lv2.h
 
-qmidiarp_lfo_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
+qmidiarp_lfo_la_LDFLAGS = -module -avoid-version -Wl,--as-needed 
+qmidiarp_lfo_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(AM_CXXFLAGS)
 
 qmidiarp_seq_la_SOURCES = \
 	lv2_common.h \
@@ -100,6 +101,7 @@ qmidiarp_seq_la_SOURCES = \
 	midiseq_lv2.cpp midiseq_lv2.h
 
 qmidiarp_seq_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
+qmidiarp_seq_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(AM_CXXFLAGS)
 
 qmidiarp_arp_la_SOURCES = \
 	lv2_common.h \
@@ -109,14 +111,21 @@ qmidiarp_arp_la_SOURCES = \
 	midiarp_lv2.cpp midiarp_lv2.h
 
 qmidiarp_arp_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
+qmidiarp_arp_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(AM_CXXFLAGS)
 
 
 if BUILD_LV2_UI
 SUBDIRS = pixmaps
 
+if LIBDIR_IS_HOME
+arppluginuidir = @libdir@/.lv2/qmidiarp_arp.lv2
+lfopluginuidir = @libdir@/.lv2/qmidiarp_lfo.lv2
+seqpluginuidir = @libdir@/.lv2/qmidiarp_seq.lv2
+else
 arppluginuidir = @libdir@/lv2/qmidiarp_arp.lv2
 lfopluginuidir = @libdir@/lv2/qmidiarp_lfo.lv2
 seqpluginuidir = @libdir@/lv2/qmidiarp_seq.lv2
+endif
 
 arppluginui_LTLIBRARIES = qmidiarp_arp_ui.la
 lfopluginui_LTLIBRARIES = qmidiarp_lfo_ui.la
@@ -144,6 +153,7 @@ qmidiarp_lfo_ui_la_SOURCES = \
 
 qmidiarp_lfo_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
 qmidiarp_lfo_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_lfo_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
 nodist_qmidiarp_seq_ui_la_SOURCES = \
 	cursor_moc.cpp \
@@ -167,6 +177,7 @@ qmidiarp_seq_ui_la_SOURCES = \
 
 qmidiarp_seq_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
 qmidiarp_seq_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_seq_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
 nodist_qmidiarp_arp_ui_la_SOURCES = \
 	cursor_moc.cpp \
@@ -190,7 +201,50 @@ qmidiarp_arp_ui_la_SOURCES = \
 
 qmidiarp_arp_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
 qmidiarp_arp_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_arp_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
+
+if BUILD_LV2_UI_RTK
+
+if LIBDIR_IS_HOME
+arpplugin_ui_gldir = @libdir@/.lv2/qmidiarp_arp.lv2
+lfoplugin_ui_gldir = @libdir@/.lv2/qmidiarp_lfo.lv2
+seqplugin_ui_gldir = @libdir@/.lv2/qmidiarp_seq.lv2
+else
+arpplugin_ui_gldir = @libdir@/lv2/qmidiarp_arp.lv2
+lfoplugin_ui_gldir = @libdir@/lv2/qmidiarp_lfo.lv2
+seqplugin_ui_gldir = @libdir@/lv2/qmidiarp_seq.lv2
+endif
+
+arpplugin_ui_gl_LTLIBRARIES = qmidiarp_arp_ui_gl.la
+lfoplugin_ui_gl_LTLIBRARIES = qmidiarp_lfo_ui_gl.la
+seqplugin_ui_gl_LTLIBRARIES = qmidiarp_seq_ui_gl.la
+
+qmidiarp_seq_ui_gl_la_SOURCES = ../robtk/ui_gl.c ../robtk/pugl/pugl_x11.c
+qmidiarp_lfo_ui_gl_la_SOURCES = ../robtk/ui_gl.c ../robtk/pugl/pugl_x11.c
+qmidiarp_arp_ui_gl_la_SOURCES = ../robtk/ui_gl.c ../robtk/pugl/pugl_x11.c
+
+qmidiarp_seq_ui_gl_la_DEPENDENCIES = seqwidget_lv2_rtk.c seqwidget_lv2_rtk.h
+qmidiarp_lfo_ui_gl_la_DEPENDENCIES = lfowidget_lv2_rtk.c lfowidget_lv2_rtk.h
+qmidiarp_arp_ui_gl_la_DEPENDENCIES = arpwidget_lv2_rtk.c arpwidget_lv2_rtk.h
+
+qmidiarp_seq_ui_gl_la_LDFLAGS = $(LV2_UI_RTK_LDFLAGS) -module -avoid-version -Wl,--as-needed 
+qmidiarp_lfo_ui_gl_la_LDFLAGS = $(LV2_UI_RTK_LDFLAGS) -module -avoid-version -Wl,--as-needed
+qmidiarp_arp_ui_gl_la_LDFLAGS = $(LV2_UI_RTK_LDFLAGS) -module -avoid-version -Wl,--as-needed
+
+qmidiarp_seq_ui_gl_la_LIBADD = $(LV2_UI_RTK_LIBS)
+qmidiarp_lfo_ui_gl_la_LIBADD = $(LV2_UI_RTK_LIBS)
+qmidiarp_arp_ui_gl_la_LIBADD = $(LV2_UI_RTK_LIBS)
+
+qmidiarp_seq_ui_gl_la_DEFS = -Wall -Wextra -D_REENTRANT -fvisibility=hidden
+qmidiarp_lfo_ui_gl_la_DEFS = -Wall -Wextra -D_REENTRANT -fvisibility=hidden
+qmidiarp_arp_ui_gl_la_DEFS = -Wall -Wextra -D_REENTRANT -fvisibility=hidden
+
+qmidiarp_seq_ui_gl_la_CFLAGS = $(LV2_UI_RTK_CFLAGS) -DPLUGIN_SOURCE="\"seqwidget_lv2_rtk.c\""
+qmidiarp_lfo_ui_gl_la_CFLAGS = $(LV2_UI_RTK_CFLAGS) -DPLUGIN_SOURCE="\"lfowidget_lv2_rtk.c\""
+qmidiarp_arp_ui_gl_la_CFLAGS = $(LV2_UI_RTK_CFLAGS) -DPLUGIN_SOURCE="\"arpwidget_lv2_rtk.c\""
+
+endif
 endif
 endif
 
@@ -212,14 +266,14 @@ TRANSLATION_DEFS = -DTRANSLATIONSDIR=\"$(translationsdir)\"
 endif
 
 AM_CXXFLAGS = @QT_CXXFLAGS@
-DEFS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS) @DEFS@ 
 
 # misc files which are distributed but not installed
 EXTRA_DIST = qmidiarp.pro $(translations) \
+	$(qmidiarp_seq_ui_gl_la_DEPENDENCIES) \
+	$(qmidiarp_lfo_ui_gl_la_DEPENDENCIES) \
+	$(qmidiarp_arp_ui_gl_la_DEPENDENCIES) \
 	CMakeLists.txt translations/CMakeLists.txt \
-	cmake_config.h.in \
-	seqwidget_lv2_rtk.c lfowidget_lv2_rtk.c arpwidget_lv2_rtk.c \
-	seqwidget_lv2_rtk.h lfowidget_lv2_rtk.h arpwidget_lv2_rtk.h
+	cmake_config.h.in
 
 
 # all generated files to be removed by "make clean"

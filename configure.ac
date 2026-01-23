@@ -6,7 +6,7 @@ AC_INIT([qmidiarp],[0.7.4],[qmidiarp-devel@lists.sourceforge.net])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS(src/config.h)
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([dist-bzip2])
+AM_INIT_AUTOMAKE([dist-bzip2 subdir-objects])
 AC_DEFINE(APP_NAME, "QMidiArp", [application name])
 
 # Initialize doxygen
@@ -326,6 +326,8 @@ AC_STRUCT_TM
 AC_FUNC_STAT
 AC_CHECK_FUNCS([floor ftruncate getcwd memset malloc mkdir pow rint sqrt])
 
+AC_SUBST([HOME])
+AM_CONDITIONAL([LIBDIR_IS_HOME], [test "x$libdir" = "x$HOME"])
 
 # Checks for typedefs, structures, and compiler characteristics.
 
