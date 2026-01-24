@@ -67,7 +67,7 @@ qmidiarp_SOURCES = \
 	slider.cpp slider.h \
 	storagebutton.cpp storagebutton.h
 
-qmidiarp_CXXFLAGS = $(AM_CXXFLAGS) -DAPPBUILD -Wno-deprecated-copy -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT $(TRANSLATION_DEFS) 
+qmidiarp_CXXFLAGS = $(AM_CXXFLAGS) -DAPPBUILD -Wno-deprecated-copy -std=c++17 -Wall -Wextra -D_REENTRANT $(TRANSLATION_DEFS) 
 qmidiarp_LDFLAGS =  -Wl,--as-needed
 qmidiarp_LDADD = $(LIBS_APP) $(Qt5_LIBS) $(Qt6_LIBS)
 
@@ -75,9 +75,15 @@ endif
 
 if BUILD_LV2
 
-arpplugindir = @libdir@/lv2/qmidiarp_arp.lv2
-lfoplugindir = @libdir@/lv2/qmidiarp_lfo.lv2
-seqplugindir = @libdir@/lv2/qmidiarp_seq.lv2
+if LIBDIR_IS_HOME
+plugindir = @libdir@/.lv2
+else
+plugindir = @libdir@/lv2
+endif
+
+arpplugindir = $(plugindir)/qmidiarp_arp.lv2
+lfoplugindir = $(plugindir)/qmidiarp_lfo.lv2
+seqplugindir = $(plugindir)/qmidiarp_seq.lv2
 
 arpplugin_LTLIBRARIES = qmidiarp_arp.la
 lfoplugin_LTLIBRARIES = qmidiarp_lfo.la
@@ -117,15 +123,9 @@ qmidiarp_arp_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REEN
 if BUILD_LV2_UI
 SUBDIRS = pixmaps
 
-if LIBDIR_IS_HOME
-arppluginuidir = @libdir@/.lv2/qmidiarp_arp.lv2
-lfopluginuidir = @libdir@/.lv2/qmidiarp_lfo.lv2
-seqpluginuidir = @libdir@/.lv2/qmidiarp_seq.lv2
-else
-arppluginuidir = @libdir@/lv2/qmidiarp_arp.lv2
-lfopluginuidir = @libdir@/lv2/qmidiarp_lfo.lv2
-seqpluginuidir = @libdir@/lv2/qmidiarp_seq.lv2
-endif
+arppluginuidir = $(arpplugindir)
+lfopluginuidir = $(lfoplugindir)
+seqpluginuidir = $(seqplugindir)
 
 arppluginui_LTLIBRARIES = qmidiarp_arp_ui.la
 lfopluginui_LTLIBRARIES = qmidiarp_lfo_ui.la
@@ -206,15 +206,9 @@ qmidiarp_arp_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_R
 
 if BUILD_LV2_UI_RTK
 
-if LIBDIR_IS_HOME
-arpplugin_ui_gldir = @libdir@/.lv2/qmidiarp_arp.lv2
-lfoplugin_ui_gldir = @libdir@/.lv2/qmidiarp_lfo.lv2
-seqplugin_ui_gldir = @libdir@/.lv2/qmidiarp_seq.lv2
-else
-arpplugin_ui_gldir = @libdir@/lv2/qmidiarp_arp.lv2
-lfoplugin_ui_gldir = @libdir@/lv2/qmidiarp_lfo.lv2
-seqplugin_ui_gldir = @libdir@/lv2/qmidiarp_seq.lv2
-endif
+arpplugin_ui_gldir = $(arpplugindir)
+lfoplugin_ui_gldir = $(lfoplugindir)
+seqplugin_ui_gldir = $(seqplugindir)
 
 arpplugin_ui_gl_LTLIBRARIES = qmidiarp_arp_ui_gl.la
 lfoplugin_ui_gl_LTLIBRARIES = qmidiarp_lfo_ui_gl.la
