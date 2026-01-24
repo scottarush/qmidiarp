@@ -148,11 +148,13 @@ void MidiSeqLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
         if (tempo != bpm) {
             /* Tempo changed */
             tempo = transportBpm;
+            if (hostTransport) {
+                transportSpeed = 0;
+            }
             initTransport();
         }
     }
     if (hostTransport) {
-        transportSpeed = 0;
         if (!ignore_pos) {
             const float frames_per_beat = 60.0f / transportBpm * sampleRate;
             transportFramesDelta = pos;
