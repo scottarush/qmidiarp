@@ -127,7 +127,7 @@ static void ui_enable(LV2UI_Handle handle)
 
 void updateParam(LV2UI_Handle handle, int index, float fValue)
 {
-    QMidiArpSeqUI* ui = (QMidiArpSeqUI*)handle;    
+    QMidiArpSeqUI* ui = (QMidiArpSeqUI*)handle;
     ui->write(ui->controller, index, sizeof(float), 0, &fValue);
 }
 
@@ -969,7 +969,7 @@ static void in_out_box_new(QMidiArpSeqUI* ui)
     
   robtk_select_set_item(ui->ch_out, 0);
   robtk_select_set_default_item(ui->ch_out, 0);
-  robtk_select_set_callback(ui->ch_in, update_ch_out, ui);
+  robtk_select_set_callback(ui->ch_out, update_ch_out, ui);
 
 // Transport controls
 
