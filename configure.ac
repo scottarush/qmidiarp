@@ -101,76 +101,69 @@ AC_ARG_ENABLE(qt5, AS_HELP_STRING([--enable-qt5],[force Qt5 instead of Qt6 libra
 if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2willbuild" = "xyes"]; then
     AC_MSG_NOTICE([QT stuff required for standalone app or LV2 UIs])
     dnl Check for Qt stuff only if we require GUI building
-    AS_IF([test x$enable_qt5 = xyes],
-        dnl Check for Qt5 library files
-        [
-        PKG_CHECK_MODULES(Qt5, Qt5Core Qt5Gui Qt5Widgets >= 5.0.0, 
-                          HAVE_QT5="yes", HAVE_QT5="no")
-        if test "x$HAVE_QT5" = "xyes"; then
-          dnl Check needed because in some cases the QtGui includedir
-          dnl does not contain the subsystem dir.
-          QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt5Widgets`
-          QT_CXXFLAGS=`$PKG_CONFIG --cflags Qt5Core Qt5Gui Qt5Widgets`
-          QT_CXXFLAGS="$QT_CXXFLAGS -fPIC"
-          EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
-          AS_IF([test -e $QT_INCLUDE_DIR/QWidget],
-          AC_MSG_NOTICE([No extra QT_INCLUDE_DIR needed]),
-          AS_IF([test -e $EXTRA_QT_INCLUDE_DIR/QWidget],
-                     QT_CPPFLAGS="$QT_CPPFLAGS -I$EXTRA_QT_INCLUDE_DIR",
-                     AC_MSG_WARN([QWidget not found])))
-        
-          AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])
-          AC_SUBST(QT_CXXFLAGS)
-          AC_SUBST(Qt5_LIBS)
-          dnl check for moc
-          AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$PATH])
-          if test "x$MOC" = "xno" ; then
-            AC_MSG_ERROR(
-              [cannot find 'moc', please install the Qt development tools package.])
-          fi
-        else
-          AC_MSG_NOTICE([cannot find Qt5 library >= 5.0.0])
-          AM_CONDITIONAL([BUILD_APP], false)
-          AM_CONDITIONAL([BUILD_LV2_UI], false)
-        fi
-        ac_qtversion=qt5],
-        dnl ... or use Qt6
-        [
-        PKG_CHECK_MODULES(Qt6, Qt6Core Qt6Gui Qt6Widgets >= 6.0.0,
-                          HAVE_QT6="yes", HAVE_QT6="no")
-        if test "x$HAVE_QT6" = "xyes"; then
-          dnl Check needed because in some cases the QtGui includedir
-          dnl doesnt contain the subsystem dir.
-          QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt6Widgets`
-          QT_CXXFLAGS=`$PKG_CONFIG --cflags Qt6Core Qt6Gui Qt6Widgets`
-          QT_CXXFLAGS="$QT_CXXFLAGS -fPIC"
-          EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
-          AS_IF([test -e $QT_INCLUDE_DIR/QWidget],
-            AC_MSG_NOTICE([No extra QT_INCLUDE_DIR needed]),
-              AS_IF([test -e $EXTRA_QT_INCLUDE_DIR/QWidget],
-                QT_CPPFLAGS="$QT_CPPFLAGS -I$EXTRA_QT_INCLUDE_DIR",
-                  AC_MSG_WARN([QWidget not found])))
 
-          AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])        
-          AC_SUBST(QT_CXXFLAGS)
-          AC_SUBST(Qt6_LIBS)
-          AC_DEFINE([HAVE_QT6], [1],[Define to 1 if you have Qt6.])
-          dnl check for moc
-          UBUNTU_QT6_MOCDIR=`$PKG_CONFIG --variable=bindir Qt6Widgets`/../libexec
-          AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$UBUNTU_QT6_MOCDIR:$PATH])
-          if test "x$MOC" = "xno" ; then
-            AC_MSG_ERROR(
-              [cannot find 'moc', please install the Qt development tools package.])
-          fi
-        else
-          AC_MSG_NOTICE([cannot find Qt6 library >= 6.0.0])
-          AM_CONDITIONAL([BUILD_APP], false)
-          AM_CONDITIONAL([BUILD_LV2_UI], false)
-        fi
-        ac_qtversion=qt6
-    ])
+    PKG_CHECK_MODULES(Qt6, Qt6Core Qt6Gui Qt6Widgets >= 6.0.0,
+                      HAVE_QT6="yes", HAVE_QT6="no")
+    PKG_CHECK_MODULES(Qt5, Qt5Core Qt5Gui Qt5Widgets >= 5.0.0, 
+                      HAVE_QT5="yes", HAVE_QT5="no")
+
+    if test "x$HAVE_QT6" = "xyes"; then
+      dnl Check needed because in some cases the QtGui includedir
+      dnl doesnt contain the subsystem dir.
+      QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt6Widgets`
+      QT_CXXFLAGS=`$PKG_CONFIG --cflags Qt6Core Qt6Gui Qt6Widgets`
+      QT_CXXFLAGS="$QT_CXXFLAGS -fPIC"
+      EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
+      AS_IF([test -e $QT_INCLUDE_DIR/QWidget],
+        AC_MSG_NOTICE([No extra QT_INCLUDE_DIR needed]),
+          AS_IF([test -e $EXTRA_QT_INCLUDE_DIR/QWidget],
+            QT_CPPFLAGS="$QT_CPPFLAGS -I$EXTRA_QT_INCLUDE_DIR",
+              AC_MSG_WARN([QWidget not found])))
+
+      AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])        
+      AC_SUBST(QT_CXXFLAGS)
+      AC_SUBST(Qt6_LIBS)
+      AC_DEFINE([HAVE_QT6], [1],[Define to 1 if you have Qt6.])
+      dnl check for moc
+      UBUNTU_QT6_MOCDIR=`$PKG_CONFIG --variable=bindir Qt6Widgets`/../libexec
+      AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$UBUNTU_QT6_MOCDIR:$PATH])
+      if test "x$MOC" = "xno" ; then
+        AC_MSG_ERROR(
+          [cannot find 'moc', please install the Qt development tools package.])
+      fi
+      ac_qtversion=qt5
+    fi
+    if test ["x$HAVE_QT5" = "xyes" -a "x$HAVE_QT6" = "xno"] -o x$enable_qt5 = xyes; then
+      dnl Check needed because in some cases the QtGui includedir
+      dnl does not contain the subsystem dir.
+      QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt5Widgets`
+      QT_CXXFLAGS=`$PKG_CONFIG --cflags Qt5Core Qt5Gui Qt5Widgets`
+      QT_CXXFLAGS="$QT_CXXFLAGS -fPIC"
+      EXTRA_QT_INCLUDE_DIR="$QT_INCLUDE_DIR/Qt"
+      AS_IF([test -e $QT_INCLUDE_DIR/QWidget],
+      AC_MSG_NOTICE([No extra QT_INCLUDE_DIR needed]),
+      AS_IF([test -e $EXTRA_QT_INCLUDE_DIR/QWidget],
+                 QT_CPPFLAGS="$QT_CPPFLAGS -I$EXTRA_QT_INCLUDE_DIR",
+                 AC_MSG_WARN([QWidget not found])))
+    
+      AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])
+      AC_SUBST(QT_CXXFLAGS)
+      AC_SUBST(Qt5_LIBS)
+      dnl check for moc
+      AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$PATH])
+      if test "x$MOC" = "xno" ; then
+        AC_MSG_ERROR(
+          [cannot find 'moc', please install the Qt development tools package.])
+      fi
+      ac_qtversion=qt6
+    fi
     dnl endo of qt version test
         
+    if test ["x$HAVE_QT5" = "xno" -a "x$HAVE_QT6" = "xno"]; then
+      AC_MSG_NOTICE([cannot find any Qt library >= 5.0.0])
+      AM_CONDITIONAL([BUILD_APP], false)
+      AM_CONDITIONAL([BUILD_LV2_UI], false)
+    fi
     # Enable translations.
     AC_ARG_ENABLE(translations,
       AS_HELP_STRING([--enable-translations],[enable translation file generation (default=no)]),
