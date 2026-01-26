@@ -69,7 +69,7 @@ qmidiarp_SOURCES = \
 
 qmidiarp_CXXFLAGS = $(AM_CXXFLAGS) -DAPPBUILD -Wno-deprecated-copy -std=c++17 -Wall -Wextra -D_REENTRANT $(TRANSLATION_DEFS) 
 qmidiarp_LDFLAGS =  -Wl,--as-needed
-qmidiarp_LDADD = $(LIBS_APP) $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_LDADD = $(LIBS_APP) $(QT_LIBS)
 
 endif
 
@@ -152,7 +152,7 @@ qmidiarp_lfo_ui_la_SOURCES = \
 	lfowidget_lv2.cpp lfowidget_lv2.h
 
 qmidiarp_lfo_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
-qmidiarp_lfo_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_lfo_ui_la_LIBADD = $(QT_LIBS)
 qmidiarp_lfo_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
 nodist_qmidiarp_seq_ui_la_SOURCES = \
@@ -176,7 +176,7 @@ qmidiarp_seq_ui_la_SOURCES = \
 	seqwidget_lv2.cpp seqwidget_lv2.h
 
 qmidiarp_seq_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
-qmidiarp_seq_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_seq_ui_la_LIBADD = $(QT_LIBS)
 qmidiarp_seq_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
 nodist_qmidiarp_arp_ui_la_SOURCES = \
@@ -200,7 +200,7 @@ qmidiarp_arp_ui_la_SOURCES = \
 	arpwidget_lv2.cpp arpwidget_lv2.h
 
 qmidiarp_arp_ui_la_LDFLAGS = -module -avoid-version -Wl,--as-needed
-qmidiarp_arp_ui_la_LIBADD = $(Qt5_LIBS) $(Qt6_LIBS)
+qmidiarp_arp_ui_la_LIBADD = $(QT_LIBS)
 qmidiarp_arp_ui_la_CXXFLAGS = -std=c++17 -Wall -Wextra -Wno-deprecated-copy -D_REENTRANT -fvisibility=hidden $(TRANSLATION_DEFS)  $(AM_CXXFLAGS)
 
 

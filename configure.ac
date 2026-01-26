@@ -98,7 +98,7 @@ AM_CONDITIONAL([BUILD_APP], [test "x$ac_buildapp" = "xyes"])
 AC_ARG_ENABLE(qt5, AS_HELP_STRING([--enable-qt5],[force Qt5 instead of Qt6 library (default=no)]),,
                           enable_qt5=no)
                           
-if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2willbuild" = "xyes"]; then
+if test ["x$ac_buildapp" = "xyes"] -o ["x$ac_lv2pluginuis" = "xyes"]  -a ["x$ac_lv2willbuild" = "xyes"]; then
     AC_MSG_NOTICE([QT stuff required for standalone app or LV2 UIs])
     dnl Check for Qt stuff only if we require GUI building
 
@@ -107,7 +107,7 @@ if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2w
     PKG_CHECK_MODULES(Qt5, Qt5Core Qt5Gui Qt5Widgets >= 5.0.0, 
                       HAVE_QT5="yes", HAVE_QT5="no")
 
-    if test "x$HAVE_QT6" = "xyes"; then
+    if test ["x$HAVE_QT6" = "xyes"] -a ["x$enable_qt5" = "xno"]; then
       dnl Check needed because in some cases the QtGui includedir
       dnl doesnt contain the subsystem dir.
       QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt6Widgets`
@@ -123,7 +123,9 @@ if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2w
       AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])        
       AC_SUBST(QT_CXXFLAGS)
       AC_SUBST(Qt6_LIBS)
-      AC_DEFINE([HAVE_QT6], [1],[Define to 1 if you have Qt6.])
+      QT_LIBS=$Qt6_LIBS
+      AC_SUBST(QT_LIBS)
+      AC_MSG_NOTICE([Set QT_LIBS... $QT_LIBS])
       dnl check for moc
       UBUNTU_QT6_MOCDIR=`$PKG_CONFIG --variable=bindir Qt6Widgets`/../libexec
       AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$UBUNTU_QT6_MOCDIR:$PATH])
@@ -131,9 +133,10 @@ if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2w
         AC_MSG_ERROR(
           [cannot find 'moc', please install the Qt development tools package.])
       fi
-      ac_qtversion=qt5
+      ac_qtversion=qt6
     fi
-    if test ["x$HAVE_QT5" = "xyes" -a "x$HAVE_QT6" = "xno"] -o x$enable_qt5 = xyes; then
+    if test ["x$HAVE_QT5" = "xyes"] -a ["x$HAVE_QT6" = "xno"] -o ["x$enable_qt5" = "xyes"]; then
+      echo "checking deeper for Qt5"
       dnl Check needed because in some cases the QtGui includedir
       dnl does not contain the subsystem dir.
       QT_INCLUDE_DIR=`$PKG_CONFIG --variable=includedir Qt5Widgets`
@@ -149,17 +152,20 @@ if test "x$ac_buildapp" = "xyes" -o ["x$ac_lv2pluginuis" = "xyes"  -a "x$ac_lv2w
       AC_MSG_NOTICE([Set QT_CXXFLAGS... $QT_CXXFLAGS])
       AC_SUBST(QT_CXXFLAGS)
       AC_SUBST(Qt5_LIBS)
+      QT_LIBS=$Qt5_LIBS
+      AC_SUBST(QT_LIBS)
+      AC_MSG_NOTICE([Set QT_LIBS... $QT_LIBS])
       dnl check for moc
       AC_PATH_PROGS(MOC, moc-$ac_qtversion moc, no, [$PATH])
       if test "x$MOC" = "xno" ; then
         AC_MSG_ERROR(
           [cannot find 'moc', please install the Qt development tools package.])
       fi
-      ac_qtversion=qt6
+      ac_qtversion=qt5
     fi
     dnl endo of qt version test
         
-    if test ["x$HAVE_QT5" = "xno" -a "x$HAVE_QT6" = "xno"]; then
+    if test ["x$HAVE_QT5" = "xno"] -a ["x$HAVE_QT6" = "xno"]; then
       AC_MSG_NOTICE([cannot find any Qt library >= 5.0.0])
       AM_CONDITIONAL([BUILD_APP], false)
       AM_CONDITIONAL([BUILD_LV2_UI], false)
@@ -335,7 +341,7 @@ AC_OUTPUT
 if test "x$ac_buildapp" = "xyes" -o "x$ac_lv2pluginuis" = "xyes" ; then
     
     echo
-    echo "Will use the following QT libs:" $Qt5_LIBS $Qt6_LIBS
+    echo "Will use the following QT libs:" $QT_LIBS
     
     echo
     if test "x$ac_translations" = "xno" ; then
