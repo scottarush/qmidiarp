@@ -502,6 +502,29 @@ static RobWidget* mouse_move(RobWidget* handle, RobTkBtnEvent *ev) {
   return handle;
 }
 
+static RobWidget* mouse_scroll(RobWidget* handle, RobTkBtnEvent *ev) {
+
+  QMidiArpLfoUI* ui = (QMidiArpLfoUI*) GET_HANDLE(handle);
+
+  int val = (int)robtk_dial_get_value(ui->dial_control[1]);
+
+  switch (ev->direction) {
+      case ROBTK_SCROLL_RIGHT:
+      case ROBTK_SCROLL_UP:
+        val += 2;
+        break;
+      case ROBTK_SCROLL_LEFT:
+      case ROBTK_SCROLL_DOWN:
+        val -= 2;
+        break;
+      default:
+        break;
+  }
+  robtk_dial_set_value(ui->dial_control[1], val);
+
+  return handle;
+}
+
 /******************************************************************************
  * Pango / Cairo Rendering, Expose
  */
@@ -1054,6 +1077,7 @@ static RobWidget * toplevel(QMidiArpLfoUI* ui, void * const top)
   robwidget_set_mousedown(ui->darea, mouse_down);
   robwidget_set_mousemove(ui->darea, mouse_move);
   robwidget_set_mouseup  (ui->darea, mouse_up);
+  robwidget_set_mousescroll  (ui->darea, mouse_scroll);
 
 // Add in_out box
   in_out_box_new(ui);
