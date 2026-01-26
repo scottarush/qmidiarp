@@ -67,16 +67,16 @@ LfoWidgetLV2::LfoWidgetLV2 (
     tempoSpin->setToolTip(tr("Tempo of internal clock"));
     connect(transportBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
     connect(transportBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
-    connect(tempoModeBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
-    connect(tempoModeBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
-    transportBox->setChecked(false);
-    tempoModeBox->setChecked(true);
      
     tempoModeBox = new QCheckBox(this);
     QLabel *tempoModeBoxLabel = new QLabel(tr("&Tempo from Host"),this);
     tempoModeBoxLabel->setBuddy(tempoModeBox);
     tempoModeBox->setToolTip(tr("Let Host set tempo"));
-    
+    connect(tempoModeBox, SIGNAL(toggled(bool)), this, SLOT(mapBool(bool)));
+    connect(tempoModeBox, SIGNAL(toggled(bool)), tempoSpin, SLOT(setDisabled(bool)));
+
+    transportBox->setChecked(false);
+    tempoModeBox->setChecked(true);
 
     inOutBoxWidget->layout()->addWidget(transportBoxLabel);
     inOutBoxWidget->layout()->addWidget(transportBox);
