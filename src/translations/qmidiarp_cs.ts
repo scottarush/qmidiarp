@@ -160,6 +160,14 @@ tohoto souboru, prosím, prostě spusťte qmidiarp.</translation>
         <source>Sync to Transport from Host</source>
         <translation></translation>
     </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>GlobStore</name>
@@ -321,6 +329,14 @@ Kolečko myši: změna posunu</translation>
     </message>
     <message>
         <source>Sync to Transport from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1021,6 +1037,14 @@ zavoláním qmidiarp -a</translation>
     </message>
     <message>
         <source>Sync to Transport from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

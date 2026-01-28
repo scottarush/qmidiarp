@@ -156,6 +156,14 @@ d h durée de note augm/dim
         <source>Tempo of internal clock</source>
         <translation>Tempo de l&apos;horologe interne</translation>
     </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>GlobStore</name>
@@ -318,6 +326,14 @@ Molette pour changer l&apos;offset</translation>
     <message>
         <source>Tempo of internal clock</source>
         <translation>Tempo de l&apos;horologe interne</translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1016,6 +1032,14 @@ Alternativement vous pouvez utiliser QMidiArp avec pilote ALSA en démarrant ave
     <message>
         <source>Tempo of internal clock</source>
         <translation>Tempo de l&apos;horologe interne</translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

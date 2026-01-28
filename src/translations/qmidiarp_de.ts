@@ -156,6 +156,14 @@ please just run the qmidiarp main application once.</source>
         <source>Tempo of internal clock</source>
         <translation>Tempo der internen Uhr</translation>
     </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>GlobStore</name>
@@ -318,6 +326,14 @@ Mausrad: Verschieben des Offsets</translation>
     <message>
         <source>Tempo of internal clock</source>
         <translation>Tempo der internen Uhr</translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1016,6 +1032,14 @@ Wenn gewünscht kann QMidiArp auch mit ALSA Treiber verwendet werden (Starten mi
     <message>
         <source>Tempo of internal clock</source>
         <translation>Tempo der internen Uhr</translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

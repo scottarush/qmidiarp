@@ -160,6 +160,14 @@ cuando todas las notas han sido reproducidas</translation>
         <source>Sync to Transport from Host</source>
         <translation></translation>
     </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>GlobStore</name>
@@ -321,6 +329,14 @@ Rueda para cambiar desplazamiento</translation>
     </message>
     <message>
         <source>Sync to Transport from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1017,6 +1033,14 @@ Alternativamente usted puede utilizar el motor ALSA MIDI mediante la orden qmidi
     </message>
     <message>
         <source>Sync to Transport from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>&amp;Tempo from Host</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Let Host set tempo</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

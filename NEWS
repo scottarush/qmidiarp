@@ -3,14 +3,16 @@ qmidiarp-0.7.4 (2026-01-28)
 Improvements / Changes:
   o LV2: Added a separate control for Host Tempo allowing the LV2 plugins
     to start in running state without Host Transport, but with Host
-    Tempo. The Arp and LFO plugins therefore now start running right
-    away. The Seq plugin is still linked to Host Transport by default.
-    This should give users less confusion when starting the plugins from
-    scratch and an additional option (Issue #36 on sf, thank you).
+    Tempo. This should give users less confusion when starting the 
+    plugins from scratch (Issue #36 on sf, thank you).
+ 
+  o Arp and LFO LV2 plugins now start in running state right
+    away. 
+  o Seq LV2 plugin is still linked to Host Transport by default.
 
 Fixed Bugs (package):
   o Seq LV2 with robtk UI was not reacting to UI output channel selector
-  o autotools-buit LV2 plugins still had visible symbols
+  o autotools-built LV2 plugins still had visible symbols
     
 qmidiarp-0.7.3 (2026-01-06)
 
