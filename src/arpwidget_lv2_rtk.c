@@ -1690,19 +1690,19 @@ port_event(LV2UI_Handle handle,
                       //~ receivePatternFlag = (int)fValue;
                   //~ }
           break;
-          case ATTACK:
+          case RANDOM_TICK:
                   robtk_dial_set_value(ui->dial_control[0], (int)fValue);
           break;
-          case RELEASE:
+          case RANDOM_VEL:
                   robtk_dial_set_value(ui->dial_control[1], (int)fValue);
           break;
-          case RANDOM_TICK:
+          case RANDOM_LEN:
                   robtk_dial_set_value(ui->dial_control[2], (int)fValue);
           break;
-          case RANDOM_LEN:
+          case ATTACK:
                   robtk_dial_set_value(ui->dial_control[3], (int)fValue);
           break;
-          case RANDOM_VEL:
+          case RELEASE:
                   robtk_dial_set_value(ui->dial_control[4], (int)fValue);
           break;
           case OCTAVE_MODE:
