@@ -50,6 +50,7 @@ MidiLfoLV2::MidiLfoLV2 (
     curTick = 0;
     tempoChangeTick = 0;
     hostTransport = true;
+    tempoFromHost = true;
     transportSpeed = 0;
     transportAtomReceived = false;
 
@@ -60,6 +61,8 @@ MidiLfoLV2::MidiLfoLV2 (
 
     LV2_URID_Map *urid_map;
 
+    urid_map = NULL;
+    
     /* Scan host features for URID map */
 
     for (int i = 0; host_features[i]; ++i) {

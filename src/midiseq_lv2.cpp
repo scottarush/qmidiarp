@@ -56,6 +56,7 @@ MidiSeqLV2::MidiSeqLV2 (
     
     tempoChangeTick = 0;
     hostTransport = true;
+    tempoFromHost = true;
     transportSpeed = 0;
     transportAtomReceived = false;
     
@@ -73,6 +74,8 @@ MidiSeqLV2::MidiSeqLV2 (
 
     LV2_URID_Map *urid_map;
 
+    urid_map = NULL;
+    
     /* Scan host features for URID map */
 
     for (int i = 0; host_features[i]; ++i) {
@@ -165,7 +168,13 @@ void MidiSeqLV2::updatePos(uint64_t pos, float bpm, int speed, bool ignore_pos)
             transportSpeed = speed;
             curFrame = transportFramesDelta;
             if (transportSpeed) {
-                setNextTick(tempoChangeTick);
+                if (tempoChangeTick > 0) {
+                    // avoid output of first note right on pressing continue
+                    setNextTick((tempoChangeTick / (TPQN / res) + 1) * (TPQN / res));
+                }
+                else {
+                    setNextTick(tempoChangeTick);
+                }
             }     
         }
     }

@@ -44,6 +44,7 @@ MidiArpLV2::MidiArpLV2 (
     curTick = 0;
     tempoChangeTick = 0;
     hostTransport = true;
+    tempoFromHost = true;
     transportSpeed = 0;
     trStartingTick = 0;
     transportAtomReceived = false;
@@ -64,6 +65,8 @@ MidiArpLV2::MidiArpLV2 (
 
     /* Scan host features for URID map */
 
+    urid_map = NULL;
+    
     for (int i = 0; host_features[i]; ++i) {
         if (::strcmp(host_features[i]->URI, LV2_URID_URI "#map") == 0) {
             urid_map = (LV2_URID_Map *) host_features[i]->data;
