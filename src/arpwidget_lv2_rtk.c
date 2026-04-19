@@ -35,6 +35,7 @@
 
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "arpwidget_lv2_rtk.h"
+#include "text_input_X11.h"
 #include "main.h"
 
 static const float color_tbg[4] = {0.0, 0.0, 0.0, 0.7};
@@ -551,7 +552,6 @@ void loadPatternPresets(LV2_Handle handle)
       free(line);
 }
 
-/*
 static void update_mouse(RobWidget* handle) {  
   QMidiArpArpUI* ui = (QMidiArpArpUI*) GET_HANDLE(handle);
 
@@ -559,46 +559,18 @@ static void update_mouse(RobWidget* handle) {
   if (ui->mouse_x > 1.) ui->mouse_x = 1;
   if (ui->mouse_y > 1.) ui->mouse_y = 1;
   if (ui->mouse_y < 0.) ui->mouse_y = 0.;
-
-  if (ui->mouse_pressed != 0) {
-    updateParam(ui, MOUSEPRESSED, ui->mouse_pressed);
-    updateParam(ui, MOUSEBUTTON, ui->mouse_buttons);
-    updateParam(ui, MOUSEX, ui->mouse_x);
-    updateParam(ui, MOUSEY, ui->mouse_y);
-    ui->draw_only_cursor = false;
-
-    if ((ui->mouse_buttons == 1) && (ui->mouse_pressed == 1)
-          && robtk_select_get_item(ui->waveform) != 5) {
-        robtk_select_set_item(ui->waveform, 5);
-    }
-  }
-    if (!(ui->mouse_pressed > 0) && (ui->mouse_buttons == 1)) updateParam(ui, WAVEFORM, 5);
 }
 
 static RobWidget* mouse_down(RobWidget* handle, RobTkBtnEvent *ev) {
   QMidiArpArpUI* ui = (QMidiArpArpUI*) GET_HANDLE(handle);
+      
+  char *res = x11_text_input(ui->pattern);
   
-  ui->mouse_pressed = 1;
-
-  if (ev->button == 1) {
-    ui->mouse_buttons = 1;
-  } 
-  else if (ev->button == 3) {
-    ui->mouse_buttons = 2;
-  } 
-  else {
-    ui->mouse_buttons = 0;
-    return handle;
+  if (res) {
+    ui->pattern[0] = '\0';
+    strncat(ui->pattern, res, PATTERNBUFSIZE);
+    updatePattern(ui, true);
   }
-  update_mouse(handle);
-  return NULL;
-}
-
-static RobWidget* mouse_up(RobWidget* handle, RobTkBtnEvent *ev) {
-  QMidiArpArpUI* ui = (QMidiArpArpUI*) GET_HANDLE(handle);
-  ui->mouse_pressed = 2;
-  ui->mouse_buttons = 0;
-  update_mouse(handle);
   return NULL;
 }
 
@@ -621,6 +593,15 @@ static RobWidget* mouse_move(RobWidget* handle, RobTkBtnEvent *ev) {
     return handle;
   }
   return handle;
+}
+
+/*
+static RobWidget* mouse_up(RobWidget* handle, RobTkBtnEvent *ev) {
+  QMidiArpArpUI* ui = (QMidiArpArpUI*) GET_HANDLE(handle);
+  ui->mouse_pressed = 2;
+  ui->mouse_buttons = 0;
+  update_mouse(handle);
+  return NULL;
 }
 */
 /******************************************************************************
@@ -1208,7 +1189,9 @@ static RobWidget * toplevel(QMidiArpArpUI* ui, void * const top)
   robwidget_set_alignment(ui->darea, 0, 0);
   robwidget_set_expose_event(ui->darea, expose_event);
   robwidget_set_size_request(ui->darea, size_request);
-  
+  robwidget_set_mousedown(ui->darea, mouse_down);
+  robwidget_set_mousemove(ui->darea, mouse_move);
+
 #ifdef LVGL_RESIZEABLE
   robwidget_set_size_allocate(ui->darea, size_allocate);
 #endif
@@ -1463,6 +1446,10 @@ instantiate(
   ui->currentIndex = 0;
   ui->isMuted = false;
   
+  ui->mouse_pressed = 0; //released
+  ui->mouse_buttons = 0;
+  ui->mouse_x = 0;
+  ui->mouse_y = 0;
   
   ui->uiIsUp = false;
   ui->draw_only_cursor = false;
