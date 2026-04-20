@@ -35,15 +35,53 @@
 
 static void refresh(Display *dpy, Window win, GC gc, const char *buf, int cursor)
 {
-    XClearWindow(dpy, win);
+    const int dyt = 12;
+    const int offset = 4;
+    const int i = 5;
+
+    int cx = XTextWidth(XQueryFont(dpy, XGContextFromGC(gc)),
+                buf, cursor);
     
-    XDrawString(dpy, win, gc, 10, 30, buf, strlen(buf));
+    XClearArea(dpy, win, 0, dyt*(i + 1) + offset + 1, 1000, dyt - 1, true);
+    XDrawString(dpy, win, gc, 0, dyt * (i + 2)+offset, buf, strlen(buf));
+    XDrawLine(dpy, win, gc, cx, dyt*(i + 2) + offset, cx, dyt*(i + 1) + offset);
+}
 
-    int cx = 10 + XTextWidth(
-        XQueryFont(dpy, XGContextFromGC(gc)),
-        buf, cursor);
+static void setup_window(Display *dpy, Window win, GC gc, const char *buf, int cursor)
+{
+    const char* hlp[5];
+    const int dyt = 12;
+    const int offset = 4;
+    
+    hlp[0] = "0..9   note played on keyboard, 0 is lowest                < . >  tempo up / reset / down";
+    hlp[1] = "( )    numbers in parentheses are stacked to chords        d h    note length up / down";
+    hlp[2] = "+ = -  octave up / reset / down                            / \\    velocity up / down";
+    hlp[3] = "t = g  semitone up / reset / down                          p      pause";
+    
+    hlp[4] = "Enter Pattern (ESC: Cancel, Enter: Accept):";
+    
+    int cx = XTextWidth(XQueryFont(dpy, XGContextFromGC(gc)),
+                buf, cursor);
 
-    XDrawLine(dpy, win, gc, cx, 10, cx, 40);
+    int sep_line_x = 56*dyt/2;
+    
+    int i = 0;
+    for (i = 0;i < 4;i++) {
+        XDrawString(dpy, win, gc, 10, dyt * (i + 1), hlp[i], strlen(hlp[i]));
+    }
+    
+    XDrawLine(dpy, win, gc, sep_line_x, 0, sep_line_x, dyt*(i) + offset);
+    
+    i++;
+    
+    XDrawString(dpy, win, gc, 0, dyt * (i + 1), hlp[4], strlen(hlp[4]));
+    
+    XDrawLine(dpy, win, gc, 0, dyt*(i + 1) + offset - 2, 1000, dyt*(i + 1) + offset-2);
+    XDrawLine(dpy, win, gc, 0, dyt*(i + 1) + offset, 1000, dyt*(i + 1) + offset);
+    XDrawString(dpy, win, gc, 0, dyt * (i + 2) + offset, buf, strlen(buf));
+    XDrawLine(dpy, win, gc, 0, dyt*(i + 2) + offset, 1000, dyt*(i + 2) + offset);
+
+    XDrawLine(dpy, win, gc, cx, dyt*(i + 2) + offset, cx, dyt*(i + 1) + offset);
 }
 
 static char* x11_text_input(const char *initial) {
@@ -55,16 +93,30 @@ static char* x11_text_input(const char *initial) {
     int screen = DefaultScreen(dpy);
     Window root = RootWindow(dpy, screen);
 
-    int w = 500, h = 60;
+    int w = 600, h = 95;
+
+    XColor bg_color, fg_color;
+    Colormap colormap;
+    char grey[] = "#383838";
+    char white[] = "#C0C0C0";
+    
+    colormap = DefaultColormap(dpy, 0);
+    XParseColor(dpy, colormap, grey, &bg_color);
+    XAllocColor(dpy, colormap, &bg_color);
+    XParseColor(dpy, colormap, white, &fg_color);
+    XAllocColor(dpy, colormap, &fg_color);
+
 
     Window win = XCreateSimpleWindow(
         dpy, root,
         200, 200, w, h, 1,
-        WhitePixel(dpy, screen),
-        BlackPixel(dpy, screen)
+        // WhitePixel(dpy, screen),
+        // BlackPixel(dpy, screen)
+        fg_color.pixel,
+        bg_color.pixel
     );
 
-    XStoreName(dpy, win, "QMidiArp Pattern");    
+    XStoreName(dpy, win, "QMidiArp Edit Pattern");    
     Atom wm_delete = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(dpy, win, &wm_delete, 1);    
     
@@ -93,8 +145,8 @@ static char* x11_text_input(const char *initial) {
     int cursor = strlen(buf);
 
     GC gc = DefaultGC(dpy, screen);
-    XSetForeground(dpy, gc, WhitePixel(dpy, screen));
-
+    XSetForeground(dpy, gc, fg_color.pixel);
+    
     int running = 1;
 
     while (running) {
@@ -102,8 +154,8 @@ static char* x11_text_input(const char *initial) {
         XNextEvent(dpy, &ev);
 
         if (ev.type == Expose) {
-            refresh(dpy, win, gc, buf, cursor);            
-       }
+            setup_window(dpy, win, gc, buf, cursor);
+        }
 
         else if (ev.type == KeyPress) {
             char text[32];
@@ -167,7 +219,8 @@ static char* x11_text_input(const char *initial) {
         }
         else if (ev.type == ClientMessage) {
             if ((Atom)ev.xclient.data.l[0] == wm_delete) {
-                /* Treat like Enter */
+                /* Treat like Escape */
+                buf[0] = 0;
                 running = 0;
             }
         }
