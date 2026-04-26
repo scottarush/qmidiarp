@@ -103,6 +103,8 @@ class LfoWidgetLV2 : public LfoWidget
     void mapBool(bool on);
     void mapMouse(double mouseX, double mouseY, int buttons, int pressed);
     void receiveWave(LV2_Atom* atom);
+    void setParameter(int port_index, float value);
+    void handleAtom(LV2_Atom* atom);
     void receiveWavePoint(int index, int value);
     void sendFlipWaveVertical();
 

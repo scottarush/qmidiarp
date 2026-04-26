@@ -141,108 +141,113 @@ void ArpWidgetLV2::port_event ( uint32_t port_index,
 
     if (!receivedPatternOnce) sendUIisUp(true);
 
-    if (format == uris->atom_eventTransfer
-      && atom->type == uris->atom_Object) {
-        receivePattern(atom);
+    if (format == uris->atom_eventTransfer) {
+        if ( (atom->type == uris->atom_Blank) 
+                || (atom->type == uris->atom_Object)) {
+          handleAtom(atom);
+          return;
+        }
     }
     else if (format == 0 && buffer_size == sizeof(float)) {
-
-
     float fValue = *(float *) buffer;
+    }
+}
 
-        switch (port_index) {
-            case ATTACK:
-                    attackTime->setValue(fValue);
-            break;
-            case RELEASE:
-                    releaseTime->setValue(fValue);
-            break;
-            case RANDOM_TICK:
-                    randomTick->setValue(fValue);
-            break;
-            case RANDOM_LEN:
-                    randomLength->setValue(fValue);
-            break;
-            case RANDOM_VEL:
-                    randomVelocity->setValue(fValue);
-            break;
-            case CH_OUT:
-                    channelOut->setCurrentIndex(fValue);
-            break;
-            case CH_IN:
-                    chIn->setCurrentIndex(fValue);
-            break;
-            case CURSOR_POS:
-                    if (screen->currentIndex != (int)fValue) {
-                        screen->updateCursor((int)fValue);
-                        screen->update();
-                    }
-            break;
-            case PATTERN_PRESET:
-                    //patternPresetBox->setCurrentIndex(fValue);
-                    //updatePattern(patternPresets.at(fValue));
-            break;
-            case MUTE:
-                    muteOutAction->setChecked((bool)fValue);
-                    screen->setMuted(fValue);
+
+void ArpWidgetLV2::setParameter(int port_index, float fValue) 
+{        
+    switch (port_index) {
+        case ATTACK:
+                attackTime->setValue(fValue);
+        break;
+        case RELEASE:
+                releaseTime->setValue(fValue);
+        break;
+        case RANDOM_TICK:
+                randomTick->setValue(fValue);
+        break;
+        case RANDOM_LEN:
+                randomLength->setValue(fValue);
+        break;
+        case RANDOM_VEL:
+                randomVelocity->setValue(fValue);
+        break;
+        case CH_OUT:
+                channelOut->setCurrentIndex(fValue);
+        break;
+        case CH_IN:
+                chIn->setCurrentIndex(fValue);
+        break;
+        case CURSOR_POS:
+                if (screen->currentIndex != (int)fValue) {
+                    screen->updateCursor((int)fValue);
                     screen->update();
-            break;
-            case LATCH_MODE:
-                    latchModeAction->setChecked((bool)fValue);
-            break;
-            case OCTAVE_MODE:
-                    octaveModeBox->setCurrentIndex(fValue);
-            break;
-            case OCTAVE_LOW:
-                    octaveLowBox->setCurrentIndex(-(int)fValue);
-            break;
-            case OCTAVE_HIGH:
-                    octaveHighBox->setCurrentIndex((int)fValue);
-            break;
-            case INDEX_IN1:
-                    indexIn[0]->setValue(fValue);
-            break;
-            case INDEX_IN2:
-                    indexIn[1]->setValue(fValue);
-            break;
-            case RANGE_IN1:
-                    rangeIn[0]->setValue(fValue);
-            break;
-            case RANGE_IN2:
-                    rangeIn[1]->setValue(fValue);
-            break;
-            case ENABLE_TRIGLEGATO:
-                    enableTrigLegato->setChecked((bool)fValue);
-            break;
-            case ENABLE_RESTARTBYKBD:
-                    enableRestartByKbd->setChecked((bool)fValue);
-            break;
-            case ENABLE_TRIGBYKBD:
-                    enableTrigByKbd->setChecked((bool)fValue);
-            break;
-            case REPEAT_MODE:
-                    repeatPatternThroughChord->setCurrentIndex(fValue);
-            break;
-            case RPATTERNFLAG:
-                    //~ if ((int)fValue != receivePatternFlag) {
-                        //~ receivePatternFlag = (int)fValue;
-                    //~ }
-            break;
-            case DEFER:
-                    deferChangesAction->setChecked((bool)fValue);
-            break;
-            case TRANSPORT_MODE:
-                    transportBox->setChecked((bool)fValue);
-            break;
-            case TEMPO_MODE:
-                    tempoModeBox->setChecked((bool)fValue);
-            break;
-            case TEMPO:
-                    tempoSpin->setValue((int)fValue);
-            break;
-            default:
-            break;
-        }
+                }
+        break;
+        case PATTERN_PRESET:
+                //patternPresetBox->setCurrentIndex(fValue);
+                //updatePattern(patternPresets.at(fValue));
+        break;
+        case MUTE:
+                muteOutAction->setChecked((bool)fValue);
+                screen->setMuted(fValue);
+                screen->update();
+        break;
+        case LATCH_MODE:
+                latchModeAction->setChecked((bool)fValue);
+        break;
+        case OCTAVE_MODE:
+                octaveModeBox->setCurrentIndex(fValue);
+        break;
+        case OCTAVE_LOW:
+                octaveLowBox->setCurrentIndex(-(int)fValue);
+        break;
+        case OCTAVE_HIGH:
+                octaveHighBox->setCurrentIndex((int)fValue);
+        break;
+        case INDEX_IN1:
+                indexIn[0]->setValue(fValue);
+        break;
+        case INDEX_IN2:
+                indexIn[1]->setValue(fValue);
+        break;
+        case RANGE_IN1:
+                rangeIn[0]->setValue(fValue);
+        break;
+        case RANGE_IN2:
+                rangeIn[1]->setValue(fValue);
+        break;
+        case ENABLE_TRIGLEGATO:
+                enableTrigLegato->setChecked((bool)fValue);
+        break;
+        case ENABLE_RESTARTBYKBD:
+                enableRestartByKbd->setChecked((bool)fValue);
+        break;
+        case ENABLE_TRIGBYKBD:
+                enableTrigByKbd->setChecked((bool)fValue);
+        break;
+        case REPEAT_MODE:
+                repeatPatternThroughChord->setCurrentIndex(fValue);
+        break;
+        case RPATTERNFLAG:
+                //~ if ((int)fValue != receivePatternFlag) {
+                    //~ receivePatternFlag = (int)fValue;
+                //~ }
+        break;
+        case DEFER:
+                deferChangesAction->setChecked((bool)fValue);
+        break;
+        case TRANSPORT_MODE:
+                transportBox->setChecked((bool)fValue);
+        break;
+        case TEMPO_MODE:
+                tempoModeBox->setChecked((bool)fValue);
+        break;
+        case TEMPO:
+                tempoSpin->setValue((int)fValue);
+        break;
+        default:
+        break;
     }
 }
 
@@ -371,6 +376,33 @@ void ArpWidgetLV2::sendPattern(const QString & p)
     /* close-off frame */
     lv2_atom_forge_pop(&forge, &frame);
     writeFunction(m_controller, MidiIn, lv2_atom_total_size(msg), uris->atom_eventTransfer, msg);
+}
+
+void ArpWidgetLV2::handleAtom(LV2_Atom* atom)
+{
+    QMidiArpURIs* const uris = &m_uris;
+
+    if ( (atom->type != uris->atom_Blank) 
+            && (atom->type != uris->atom_Object)) {
+              return;
+            }
+
+    /* cast the buffer to Atom Object */
+    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+    
+    if (obj->body.otype == uris->pattern_string) {
+      receivePattern(atom);      
+    }
+    else if (obj->body.otype == uris->atom_indexValue) {
+      LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+      LV2_Atom *a0 = NULL;
+      LV2_Atom *a1 = NULL;
+      if (lv2_atom_object_get(obj, uris->atom_Int, &a0, uris->atom_Float, &a1, NULL) == 2) {
+        int port_index   = (int)((LV2_Atom_Int*)a0)->body + 2;
+        float fValue   = ((LV2_Atom_Float*)a1)->body;
+        setParameter(port_index, fValue);
+      }
+    }
 }
 
 void ArpWidgetLV2::sendUIisUp(bool on)

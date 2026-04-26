@@ -53,6 +53,129 @@ LV2UI_Write_Function write_Function;
 /******************************************************************************
  * Communication with DSP backend -- send/receive settings
  */
+void setParameter(LV2UI_Handle handle, int port_index, float fValue)
+{
+
+    QMidiArpSeqUI* ui = (QMidiArpSeqUI*)handle;
+  
+    switch (port_index) {
+      case VELOCITY:
+              robtk_dial_set_value(ui->dial_control[0], (int)fValue);
+      break;
+      case NOTELENGTH:
+              robtk_dial_set_value(ui->dial_control[1], (int)fValue);
+      break;
+      case RESOLUTION:
+              robtk_select_set_item(ui->res_box, (int)fValue);
+      break;
+      case SIZE:
+              robtk_select_set_item(ui->size_box, (int)fValue);
+      break;
+      case TRANSPOSE:
+              robtk_dial_set_value(ui->dial_control[2], (int)fValue);
+      break;
+      case CH_OUT:
+              robtk_select_set_item(ui->ch_out, (int)fValue);
+      break;
+      case CH_IN:
+              robtk_select_set_item(ui->ch_in, (int)fValue);
+      break;
+      case INDEX_IN1:
+              robtk_spin_set_value(ui->spb_index_in0, (int)fValue);
+      break;
+      case INDEX_IN2:
+              robtk_spin_set_value(ui->spb_index_in1, (int)fValue);
+      break;
+      case RANGE_IN1:
+              robtk_spin_set_value(ui->spb_range_in0, (int)fValue);
+      break;
+      case RANGE_IN2:
+              robtk_spin_set_value(ui->spb_range_in1, (int)fValue);
+      break;
+      case CURSOR_POS:
+              if (ui->currentIndex != (int)fValue) {
+                ui->currentIndex = (int)fValue;
+                if (ui->mouse_pressed == 0 && ui->wave_drawn) ui->draw_only_cursor = true;
+                queue_draw_area(ui->darea, 0, SEQSCR_MIN_H, DAWIDTH, 
+                                    CSR_MIN_H + CSR_VMARG);
+              }
+      break;
+      case LOOPMARKER:
+              if (ui->loopMarker != (int)fValue) {
+                ui->loopMarker = (int)fValue;
+                queue_draw(ui->darea);
+              }
+      break;
+      case LOOPMODE:
+              robtk_select_set_item(ui->loop_mode, (int)fValue);
+      break;
+      case MUTE:
+              if (ui->isMuted != (int)fValue) {
+                ui->isMuted = (int)fValue;
+                queue_draw(ui->darea);
+                robtk_cbtn_set_active(ui->btn_mute, (fValue > 0));
+              }
+      break;
+      case DISPLAY_ZOOM:
+              if ((ui->dispVert != (int)fValue) && (4 > (int)fValue)) {
+                ui->dispVert = (int)fValue;
+                queue_draw(ui->darea);
+                robtk_rbtn_set_active(ui->rbtn_disp_vert[ui->dispVert], true);
+              }
+      break;
+      case MOUSEX:
+      case MOUSEY:
+      case MOUSEBUTTON:
+      case MOUSEPRESSED:
+      break;
+      case ENABLE_NOTEIN:
+              robtk_cbtn_set_active(ui->btn_notein, (fValue > 0));
+      break;
+      case ENABLE_VELIN:
+              robtk_cbtn_set_active(ui->btn_velin, (fValue > 0));
+      break;
+      case ENABLE_NOTEOFF:
+              robtk_cbtn_set_active(ui->btn_noteoff, (fValue > 0));
+      break;
+      case ENABLE_RESTARTBYKBD:
+              robtk_cbtn_set_active(ui->btn_restartkbd, (fValue > 0));
+      break;
+      case ENABLE_TRIGBYKBD:
+              robtk_cbtn_set_active(ui->btn_trigkbd, (fValue > 0));
+      break;
+      case ENABLE_TRIGLEGATO:
+              robtk_cbtn_set_active(ui->btn_triglegato, (fValue > 0));
+      break;
+      case RECORD:
+              if (ui->recordMode != (int)fValue) {
+                ui->recordMode = (int)fValue;
+                queue_draw(ui->darea);
+                robtk_cbtn_set_active(ui->btn_record, (fValue > 0));
+              }
+      break;
+      case DEFER:
+              robtk_cbtn_set_active(ui->btn_defer, (fValue > 0));
+      break;
+      case CURR_RECSTEP:
+              //record step has changed
+              if (ui->currentRecStep != (int)fValue) {
+                  ui->currentRecStep = (int)fValue;
+                  queue_draw(ui->darea);
+              }
+      break;
+      case TRANSPORT_MODE:
+              robtk_cbtn_set_active(ui->btn_transport, (fValue > 0));
+      break;
+      case TEMPO:
+              robtk_spin_set_value(ui->spb_tempo, (int)fValue);
+      break;
+      case TEMPO_MODE:
+              robtk_cbtn_set_active(ui->btn_tempo_mode, (fValue > 0));
+      break;
+      default:
+      break;
+    }
+}
 
 void receiveWave(LV2UI_Handle handle, LV2_Atom* atom)
 {
@@ -63,12 +186,9 @@ void receiveWave(LV2UI_Handle handle, LV2_Atom* atom)
             && (atom->type != uris->atom_Object)) {
               return;
             }
-
-    /* cast the buffer to Atom Object */
     LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
     LV2_Atom *a0 = NULL;
     lv2_atom_object_get(obj, uris->hex_customwave, &a0, NULL);
-    if (obj->body.otype != uris->hex_customwave) return;
 
     /* handle wave' data vector */
     LV2_Atom_Vector* voi = (LV2_Atom_Vector*)LV2_ATOM_BODY(a0);
@@ -86,6 +206,36 @@ void receiveWave(LV2UI_Handle handle, LV2_Atom* atom)
         ui->dataticks[l1] = l1 * TPQN / ui->res;
     }
     ui->data_count = n_elem;
+    queue_draw(ui->darea);
+}
+
+
+void handleAtom(LV2UI_Handle handle, LV2_Atom* atom)
+{
+    QMidiArpSeqUI* ui = (QMidiArpSeqUI*)handle;
+    const QMidiArpURIs* uris = &ui->uris;
+
+    if ( (atom->type != uris->atom_Blank) 
+            && (atom->type != uris->atom_Object)) {
+              return;
+            }
+
+    /* cast the buffer to Atom Object */
+    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+    
+    if (obj->body.otype == uris->hex_customwave) {
+      receiveWave(handle, atom);      
+    }
+    else if (obj->body.otype == uris->atom_indexValue) {
+      LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+      LV2_Atom *a0 = NULL;
+      LV2_Atom *a1 = NULL;
+      if (lv2_atom_object_get(obj, uris->atom_Int, &a0, uris->atom_Float, &a1, NULL) == 2) {
+        int port_index   = (int)((LV2_Atom_Int*)a0)->body + 2; //add 2 to index to skip in out ports
+        float fValue   = ((LV2_Atom_Float*)a1)->body;
+        setParameter(handle, port_index, fValue);
+      }
+    }
 }
 
 static void 
@@ -1521,132 +1671,17 @@ port_event(LV2UI_Handle handle,
    *  Every event message is sent as separate port-event
    */
 
-    if (format == uris->atom_eventTransfer
-      && (atom->type == uris->atom_Object) ) {
-        receiveWave(handle, atom);
-        queue_draw(ui->darea);
+    if (format == uris->atom_eventTransfer) {
+      if ( (atom->type == uris->atom_Blank) 
+              || (atom->type == uris->atom_Object)) {
+        handleAtom(handle, atom);
+        return;
+      }
     }
     else if (format == 0 && buffer_size == sizeof(float)) {
-
-        float fValue = *(float *) buffer;
-        // printf("port event index %d  -  value %f\n", port_index, fValue);
-        switch (port_index) {
-          case VELOCITY:
-                  robtk_dial_set_value(ui->dial_control[0], (int)fValue);
-          break;
-          case NOTELENGTH:
-                  robtk_dial_set_value(ui->dial_control[1], (int)fValue);
-          break;
-          case RESOLUTION:
-                  robtk_select_set_item(ui->res_box, (int)fValue);
-          break;
-          case SIZE:
-                  robtk_select_set_item(ui->size_box, (int)fValue);
-          break;
-          case TRANSPOSE:
-                  robtk_dial_set_value(ui->dial_control[2], (int)fValue);
-          break;
-          case CH_OUT:
-                  robtk_select_set_item(ui->ch_out, (int)fValue);
-          break;
-          case CH_IN:
-                  robtk_select_set_item(ui->ch_in, (int)fValue);
-          break;
-          case INDEX_IN1:
-                  robtk_spin_set_value(ui->spb_index_in0, (int)fValue);
-          break;
-          case INDEX_IN2:
-                  robtk_spin_set_value(ui->spb_index_in1, (int)fValue);
-          break;
-          case RANGE_IN1:
-                  robtk_spin_set_value(ui->spb_range_in0, (int)fValue);
-          break;
-          case RANGE_IN2:
-                  robtk_spin_set_value(ui->spb_range_in1, (int)fValue);
-          break;
-          case CURSOR_POS:
-                  if (ui->currentIndex != (int)fValue) {
-                    ui->currentIndex = (int)fValue;
-                    if (ui->mouse_pressed == 0 && ui->wave_drawn) ui->draw_only_cursor = true;
-                    queue_draw_area(ui->darea, 0, SEQSCR_MIN_H, DAWIDTH, 
-                                        CSR_MIN_H + CSR_VMARG);
-                  }
-          break;
-          case LOOPMARKER:
-                  if (ui->loopMarker != (int)fValue) {
-                    ui->loopMarker = (int)fValue;
-                    queue_draw(ui->darea);
-                  }
-          break;
-          case LOOPMODE:
-                  robtk_select_set_item(ui->loop_mode, (int)fValue);
-          break;
-          case MUTE:
-                  if (ui->isMuted != (int)fValue) {
-                    ui->isMuted = (int)fValue;
-                    queue_draw(ui->darea);
-                    robtk_cbtn_set_active(ui->btn_mute, (fValue > 0));
-                  }
-          break;
-          case DISPLAY_ZOOM:
-                  if ((ui->dispVert != (int)fValue) && (4 > (int)fValue)) {
-                    ui->dispVert = (int)fValue;
-                    queue_draw(ui->darea);
-                    robtk_rbtn_set_active(ui->rbtn_disp_vert[ui->dispVert], true);
-                  }
-          break;
-          case MOUSEX:
-          case MOUSEY:
-          case MOUSEBUTTON:
-          case MOUSEPRESSED:
-          break;
-          case ENABLE_NOTEIN:
-                  robtk_cbtn_set_active(ui->btn_notein, (fValue > 0));
-          break;
-          case ENABLE_VELIN:
-                  robtk_cbtn_set_active(ui->btn_velin, (fValue > 0));
-          break;
-          case ENABLE_NOTEOFF:
-                  robtk_cbtn_set_active(ui->btn_noteoff, (fValue > 0));
-          break;
-          case ENABLE_RESTARTBYKBD:
-                  robtk_cbtn_set_active(ui->btn_restartkbd, (fValue > 0));
-          break;
-          case ENABLE_TRIGBYKBD:
-                  robtk_cbtn_set_active(ui->btn_trigkbd, (fValue > 0));
-          break;
-          case ENABLE_TRIGLEGATO:
-                  robtk_cbtn_set_active(ui->btn_triglegato, (fValue > 0));
-          break;
-          case RECORD:
-                  if (ui->recordMode != (int)fValue) {
-                    ui->recordMode = (int)fValue;
-                    queue_draw(ui->darea);
-                    robtk_cbtn_set_active(ui->btn_record, (fValue > 0));
-                  }
-          break;
-          case DEFER:
-                  robtk_cbtn_set_active(ui->btn_defer, (fValue > 0));
-          break;
-          case CURR_RECSTEP:
-                  //record step has changed
-                  if (ui->currentRecStep != (int)fValue) {
-                      ui->currentRecStep = (int)fValue;
-                      queue_draw(ui->darea);
-                  }
-          break;
-          case TRANSPORT_MODE:
-                  robtk_cbtn_set_active(ui->btn_transport, (fValue > 0));
-          break;
-          case TEMPO:
-                  robtk_spin_set_value(ui->spb_tempo, (int)fValue);
-          break;
-          case TEMPO_MODE:
-                  robtk_cbtn_set_active(ui->btn_tempo_mode, (fValue > 0));
-          break;
-          default:
-          break;
-        }
+      
+      float fValue = *(float *) buffer;
+      setParameter(handle, port_index, fValue);
     }
 }
 

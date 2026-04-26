@@ -61,6 +61,7 @@ typedef struct {
     LV2_URID ui_up;
     LV2_URID ui_down;
     LV2_URID flip_wave;
+    LV2_URID atom_indexValue;
 } QMidiArpURIs;
 
 static inline void map_uris(LV2_URID_Map* urid_map, QMidiArpURIs* uris) {
@@ -86,5 +87,6 @@ static inline void map_uris(LV2_URID_Map* urid_map, QMidiArpURIs* uris) {
     uris->ui_up               = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "UI_UP");
     uris->ui_down             = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "UI_DOWN");
     uris->flip_wave           = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "FLIP_WAVE");
+    uris->atom_indexValue     = urid_map->map(urid_map->handle, QMIDIARP_LV2_PREFIX "INDEX_VALUE");
 }
 #endif

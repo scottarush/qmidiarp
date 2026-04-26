@@ -105,6 +105,8 @@ class SeqWidgetLV2 : public SeqWidget
     void mapParam(int value);
     void mapBool(bool on);
     void mapMouse(double mouseX, double mouseY, int buttons, int pressed);
+    void setParameter(int index, float fValue);
+    void handleAtom(LV2_Atom* atom);
     void receiveWave(LV2_Atom* atom);
     void receiveWavePoint(int index, int value);
 

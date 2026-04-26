@@ -283,6 +283,7 @@ void MidiArpLV2::run ( uint32_t nframes )
             }
             float pos = (float)getFramePtr();
             *val[CURSOR_POS] = pos;
+            sendParameter(CURSOR_POS, pos);
         }
 
         // Note Off Queue handling
@@ -419,6 +420,25 @@ void MidiArpLV2::initTransport()
         setNextTick(tempoChangeTick);
     }
 }
+
+void MidiArpLV2::sendParameter(int index, float value)
+{
+    const QMidiArpURIs* uris = &m_uris;
+
+    /* forge container object of type atom_indexValue */
+    LV2_Atom_Forge_Frame frame;
+    lv2_atom_forge_frame_time(&forge, 0);
+    lv2_atom_forge_object(&forge, &frame, 1, uris->atom_indexValue);
+
+    /* Send (index, value) pair to UI */
+    lv2_atom_forge_property_head(&forge, uris->atom_Int, 0);
+    lv2_atom_forge_int(&forge, index);
+    lv2_atom_forge_property_head(&forge, uris->atom_Float, 0);
+    lv2_atom_forge_float(&forge, (float)value);
+
+    /* close-off frame */
+    lv2_atom_forge_pop(&forge, &frame);
+  }
 
 void MidiArpLV2::sendPattern(const std::string & p)
 {

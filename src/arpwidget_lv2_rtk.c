@@ -61,6 +61,257 @@ void updateParam(LV2UI_Handle handle, int index, float fValue)
     ui->write(ui->controller, index, sizeof(float), 0, &fValue);
 }
 
+void sendPattern(LV2UI_Handle handle)
+{
+
+    QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
+    const QMidiArpURIs* uris = &ui->uris;
+
+    const char* c = ui->pattern;
+    uint8_t obj_buf[256];
+
+    LV2_Atom_Forge_Frame frame;
+    lv2_atom_forge_frame_time(&ui->forge, 0);
+
+    // prepare forge buffer and initialize atom-sequence
+    lv2_atom_forge_set_buffer(&ui->forge, obj_buf, sizeof(obj_buf));
+    LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&ui->forge, &frame, 1, uris->pattern_string);
+
+    // forge container object of type 'pattern_string'
+    lv2_atom_forge_property_head(&ui->forge, uris->pattern_string, 0);
+    lv2_atom_forge_string(&ui->forge, c, strlen(c));
+
+    // close-off frame 
+    lv2_atom_forge_pop(&ui->forge, &frame);
+    ui->write(ui->controller, MidiIn, lv2_atom_total_size(msg), ui->uris.atom_eventTransfer, msg);
+}
+
+void updatePattern(LV2UI_Handle handle, bool send)
+{
+    QMidiArpArpUI* ui = (QMidiArpArpUI*) handle;
+    
+    if (!strlen(ui->pattern)) return;
+     
+    int patternMaxIndex = 0;
+    double minStepWidth = 1.0;
+    int minOctave = 0;
+    int maxOctave = 0;
+
+    double stepwd = 1.0;
+    double nsteps = 0.;
+    int chordindex = 0;
+    bool chordmd = false;
+    int oct = 0;
+    int npoints = 0;
+    
+    // Strip trailing control tokens from end of pattern
+    char c = ui->pattern[strlen(ui->pattern) - 1];
+    while ( strlen(ui->pattern) 
+                && !((int)c > 47) 
+                && !((int)c < 58)
+                && (c != 'p') 
+                && (c != ')') ) {
+        ui->pattern[strlen(ui->pattern) - 1] = '\0';
+        c = ui->pattern[strlen(ui->pattern) - 1];
+    }
+    
+    int patternLen = strlen(ui->pattern);
+    
+    if (!ui->receivePatternFlag && send) sendPattern(handle);
+
+    // determine some useful properties of the arp pattern,
+    // number of octaves, step width and number of steps in beats and
+    // number of points
+
+    for (int l1 = 0; l1 < patternLen; l1++) {
+        const char c = ui->pattern[l1];
+
+        if ((int)c > 47 && (int)c < 58) {
+            if (!chordindex) {
+                nsteps += stepwd;
+                npoints++;
+                if (chordmd) chordindex++;
+            }
+            if (((int)c - 48) > patternMaxIndex)
+                patternMaxIndex = (int)c - 48;
+        }
+        switch(c) {
+            case '(':
+                chordmd = true;
+                chordindex = 0;
+                break;
+
+            case ')':
+                chordmd = false;
+                chordindex = 0;
+                break;
+
+            case '>':
+                stepwd *= .5;
+                if (stepwd < minStepWidth)
+                    minStepWidth *= .5;
+                break;
+
+            case '<':
+                stepwd *= 2.0;
+                break;
+
+            case '.':
+                stepwd = 1.0;
+                break;
+
+            case 'p':
+                if (!chordmd) {
+                    nsteps += stepwd;
+                    npoints++;
+                }
+                break;
+
+            case '+':
+                oct++;
+                if (oct > maxOctave)
+                    maxOctave++;
+                break;
+
+            case '-':
+                oct--;
+                if (oct < minOctave)
+                    minOctave--;
+                break;
+
+            case '=':
+                oct=0;
+                break;
+
+            default:
+                ;
+        }
+    }
+    ui->minOctave = minOctave;
+    ui->maxOctave = maxOctave;
+    ui->minStepWidth = minStepWidth;
+    ui->nSteps = nsteps;
+    ui->patternMaxIndex = patternMaxIndex;
+    ui->patternLen = patternLen;
+    queue_draw(ui->darea);
+}
+
+void setParameter(LV2UI_Handle handle, int port_index, float fValue)
+{
+
+    QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
+
+    switch (port_index) {
+      case PATTERN_PRESET:
+              //patternPresetBox->setCurrentIndex(fValue);
+              //updatePattern(patternPresets.at(fValue));
+      break;
+      case RPATTERNFLAG:
+              //~ if ((int)fValue != receivePatternFlag) {
+                  //~ receivePatternFlag = (int)fValue;
+              //~ }
+      break;
+      case RANDOM_TICK:
+              robtk_dial_set_value(ui->dial_control[0], (int)fValue);
+      break;
+      case RANDOM_VEL:
+              robtk_dial_set_value(ui->dial_control[1], (int)fValue);
+      break;
+      case RANDOM_LEN:
+              robtk_dial_set_value(ui->dial_control[2], (int)fValue);
+      break;
+      case ATTACK:
+              robtk_dial_set_value(ui->dial_control[3], (int)fValue);
+      break;
+      case RELEASE:
+              robtk_dial_set_value(ui->dial_control[4], (int)fValue);
+      break;
+      case OCTAVE_MODE:
+              robtk_select_set_item(ui->sel_oct_mode, (int)fValue);
+      break;
+      case OCTAVE_LOW:
+              robtk_select_set_item(ui->sel_oct_low, (int)fValue + 3);
+      break;
+      case REPEAT_MODE:
+              robtk_select_set_item(ui->sel_repeat_mode, (int)fValue);
+      break;
+      case OCTAVE_HIGH:
+              robtk_select_set_item(ui->sel_oct_high, (int)fValue);
+      break;
+      case LATCH_MODE:
+              robtk_cbtn_set_active(ui->btn_latch, (fValue > 0));
+      break;
+      case CH_OUT:
+              robtk_select_set_item(ui->ch_out, (int)fValue);
+      break;
+      case CH_IN:
+              robtk_select_set_item(ui->ch_in, (int)fValue);
+      break;
+      case INDEX_IN1:
+              robtk_spin_set_value(ui->spb_index_in0, (int)fValue);
+      break;
+      case INDEX_IN2:
+              robtk_spin_set_value(ui->spb_index_in1, (int)fValue);
+      break;
+      case RANGE_IN1:
+              robtk_spin_set_value(ui->spb_range_in0, (int)fValue);
+      break;
+      case RANGE_IN2:
+              robtk_spin_set_value(ui->spb_range_in1, (int)fValue);
+      break;
+      case CURSOR_POS:
+              if (ui->currentIndex != (int)fValue) {
+                ui->currentIndex = (int)fValue;
+                queue_draw(ui->darea);
+              }
+      break;
+      case MUTE:
+              if (ui->isMuted != (int)fValue) {
+                ui->isMuted = (int)fValue;
+                queue_draw(ui->darea);
+                robtk_cbtn_set_active(ui->btn_mute, (fValue > 0));
+              }
+      break;
+      case ENABLE_RESTARTBYKBD:
+              robtk_cbtn_set_active(ui->btn_restartkbd, (fValue > 0));
+      break;
+      case ENABLE_TRIGBYKBD:
+              robtk_cbtn_set_active(ui->btn_trigkbd, (fValue > 0));
+      break;
+      case ENABLE_TRIGLEGATO:
+              robtk_cbtn_set_active(ui->btn_triglegato, (fValue > 0));
+      break;
+      case DEFER:
+              robtk_cbtn_set_active(ui->btn_defer, (fValue > 0));
+      break;
+      case TRANSPORT_MODE:
+              robtk_cbtn_set_active(ui->btn_transport, (fValue > 0));
+      break;
+      case TEMPO:
+              robtk_spin_set_value(ui->spb_tempo, (int)fValue);
+      break;
+      case TEMPO_MODE:
+              robtk_cbtn_set_active(ui->btn_tempo_mode, (fValue > 0));
+      break;
+      default:
+      break;
+    }
+}
+
+void updateCursor(LV2UI_Handle handle, LV2_Atom* atom)
+{
+    QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
+    const QMidiArpURIs* uris = &ui->uris;
+
+    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+    LV2_Atom *a0 = NULL;
+    lv2_atom_object_get(obj, uris->atom_Int, &a0, NULL);
+    const int cursorpos   = ((LV2_Atom_Int*)a0)->body;
+
+    ui->currentIndex = cursorpos;
+    queue_draw(ui->darea);
+}
+
 void receivePattern(LV2UI_Handle handle, LV2_Atom* atom)
 {
     QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
@@ -88,32 +339,35 @@ void receivePattern(LV2UI_Handle handle, LV2_Atom* atom)
     ui->patternLen = plen;
     //robtk_lbl_set_text(ui->lbl_pattern_text, ui->pattern);
     ui->receivePatternFlag = false;
+    updatePattern(handle, false);
 }
 
-
-void sendPattern(LV2UI_Handle handle)
+void handleAtom(LV2UI_Handle handle, LV2_Atom* atom)
 {
-
     QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
     const QMidiArpURIs* uris = &ui->uris;
 
-    const char* c = ui->pattern;
-    uint8_t obj_buf[256];
+    if ( (atom->type != uris->atom_Blank) 
+            && (atom->type != uris->atom_Object)) {
+              return;
+            }
 
-    LV2_Atom_Forge_Frame frame;
-    lv2_atom_forge_frame_time(&ui->forge, 0);
-
-    // prepare forge buffer and initialize atom-sequence
-    lv2_atom_forge_set_buffer(&ui->forge, obj_buf, sizeof(obj_buf));
-    LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&ui->forge, &frame, 1, uris->pattern_string);
-
-    // forge container object of type 'pattern_string'
-    lv2_atom_forge_property_head(&ui->forge, uris->pattern_string, 0);
-    lv2_atom_forge_string(&ui->forge, c, strlen(c));
-
-    // close-off frame 
-    lv2_atom_forge_pop(&ui->forge, &frame);
-    ui->write(ui->controller, MidiIn, lv2_atom_total_size(msg), ui->uris.atom_eventTransfer, msg);
+    /* cast the buffer to Atom Object */
+    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+    
+    if (obj->body.otype == uris->pattern_string) {
+      receivePattern(handle, atom);      
+    }
+    else if (obj->body.otype == uris->atom_indexValue) {
+      LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+      LV2_Atom *a0 = NULL;
+      LV2_Atom *a1 = NULL;
+      if (lv2_atom_object_get(obj, uris->atom_Int, &a0, uris->atom_Float, &a1, NULL) == 2) {
+        int port_index   = (int)((LV2_Atom_Int*)a0)->body + 2; //add 2 to index to skip in out ports
+        float fValue   = ((LV2_Atom_Float*)a1)->body;
+        setParameter(handle, port_index, fValue);
+      }
+    }
 }
 
 static void 
@@ -377,116 +631,6 @@ static bool update_defer (RobWidget *widget, void* data)
     QMidiArpArpUI* ui = (QMidiArpArpUI*) data;
     updateParam(ui, DEFER, robtk_cbtn_get_active(ui->btn_defer));
     return TRUE;
-}
-
-void updatePattern(LV2UI_Handle handle, bool send)
-{
-    QMidiArpArpUI* ui = (QMidiArpArpUI*) handle;
-    
-    if (!strlen(ui->pattern)) return;
-     
-    int patternMaxIndex = 0;
-    double minStepWidth = 1.0;
-    int minOctave = 0;
-    int maxOctave = 0;
-
-    double stepwd = 1.0;
-    double nsteps = 0.;
-    int chordindex = 0;
-    bool chordmd = false;
-    int oct = 0;
-    int npoints = 0;
-    
-    // Strip trailing control tokens from end of pattern
-    char c = ui->pattern[strlen(ui->pattern) - 1];
-    while ( strlen(ui->pattern) 
-                && !((int)c > 47) 
-                && !((int)c < 58)
-                && (c != 'p') 
-                && (c != ')') ) {
-        ui->pattern[strlen(ui->pattern) - 1] = '\0';
-        c = ui->pattern[strlen(ui->pattern) - 1];
-    }
-    
-    int patternLen = strlen(ui->pattern);
-    
-    if (!ui->receivePatternFlag && send) sendPattern(handle);
-
-    // determine some useful properties of the arp pattern,
-    // number of octaves, step width and number of steps in beats and
-    // number of points
-
-    for (int l1 = 0; l1 < patternLen; l1++) {
-        const char c = ui->pattern[l1];
-
-        if ((int)c > 47 && (int)c < 58) {
-            if (!chordindex) {
-                nsteps += stepwd;
-                npoints++;
-                if (chordmd) chordindex++;
-            }
-            if (((int)c - 48) > patternMaxIndex)
-                patternMaxIndex = (int)c - 48;
-        }
-        switch(c) {
-            case '(':
-                chordmd = true;
-                chordindex = 0;
-                break;
-
-            case ')':
-                chordmd = false;
-                chordindex = 0;
-                break;
-
-            case '>':
-                stepwd *= .5;
-                if (stepwd < minStepWidth)
-                    minStepWidth *= .5;
-                break;
-
-            case '<':
-                stepwd *= 2.0;
-                break;
-
-            case '.':
-                stepwd = 1.0;
-                break;
-
-            case 'p':
-                if (!chordmd) {
-                    nsteps += stepwd;
-                    npoints++;
-                }
-                break;
-
-            case '+':
-                oct++;
-                if (oct > maxOctave)
-                    maxOctave++;
-                break;
-
-            case '-':
-                oct--;
-                if (oct < minOctave)
-                    minOctave--;
-                break;
-
-            case '=':
-                oct=0;
-                break;
-
-            default:
-                ;
-        }
-    }
-    ui->minOctave = minOctave;
-    ui->maxOctave = maxOctave;
-    ui->minStepWidth = minStepWidth;
-    ui->nSteps = nsteps;
-    ui->patternMaxIndex = patternMaxIndex;
-    ui->patternLen = patternLen;
-    queue_draw(ui->darea);
 }
 
 static bool update_presets (RobWidget *widget, void* data)
@@ -1658,110 +1802,16 @@ port_event(LV2UI_Handle handle,
    *  Every event message is sent as separate port-event
    */
 
-    if (format == uris->atom_eventTransfer
-      && (atom->type == uris->atom_Object) ) {
-        receivePattern(handle, atom);
-        updatePattern(handle, false);
+    if (format == uris->atom_eventTransfer) {
+      if ( (atom->type == uris->atom_Blank) 
+              || (atom->type == uris->atom_Object)) {
+        handleAtom(handle, atom);
+        return;
+      }
     }
     else if (format == 0 && buffer_size == sizeof(float)) {
-
-        float fValue = *(float *) buffer;
-        // printf("port event index %d  -  value %f\n", port_index, fValue);
-        switch (port_index) {
-          case PATTERN_PRESET:
-                  //patternPresetBox->setCurrentIndex(fValue);
-                  //updatePattern(patternPresets.at(fValue));
-          break;
-          case RPATTERNFLAG:
-                  //~ if ((int)fValue != receivePatternFlag) {
-                      //~ receivePatternFlag = (int)fValue;
-                  //~ }
-          break;
-          case RANDOM_TICK:
-                  robtk_dial_set_value(ui->dial_control[0], (int)fValue);
-          break;
-          case RANDOM_VEL:
-                  robtk_dial_set_value(ui->dial_control[1], (int)fValue);
-          break;
-          case RANDOM_LEN:
-                  robtk_dial_set_value(ui->dial_control[2], (int)fValue);
-          break;
-          case ATTACK:
-                  robtk_dial_set_value(ui->dial_control[3], (int)fValue);
-          break;
-          case RELEASE:
-                  robtk_dial_set_value(ui->dial_control[4], (int)fValue);
-          break;
-          case OCTAVE_MODE:
-                  robtk_select_set_item(ui->sel_oct_mode, (int)fValue);
-          break;
-          case OCTAVE_LOW:
-                  robtk_select_set_item(ui->sel_oct_low, (int)fValue + 3);
-          break;
-          case REPEAT_MODE:
-                  robtk_select_set_item(ui->sel_repeat_mode, (int)fValue);
-          break;
-          case OCTAVE_HIGH:
-                  robtk_select_set_item(ui->sel_oct_high, (int)fValue);
-          break;
-          case LATCH_MODE:
-                  robtk_cbtn_set_active(ui->btn_latch, (fValue > 0));
-          break;
-          case CH_OUT:
-                  robtk_select_set_item(ui->ch_out, (int)fValue);
-          break;
-          case CH_IN:
-                  robtk_select_set_item(ui->ch_in, (int)fValue);
-          break;
-          case INDEX_IN1:
-                  robtk_spin_set_value(ui->spb_index_in0, (int)fValue);
-          break;
-          case INDEX_IN2:
-                  robtk_spin_set_value(ui->spb_index_in1, (int)fValue);
-          break;
-          case RANGE_IN1:
-                  robtk_spin_set_value(ui->spb_range_in0, (int)fValue);
-          break;
-          case RANGE_IN2:
-                  robtk_spin_set_value(ui->spb_range_in1, (int)fValue);
-          break;
-          case CURSOR_POS:
-                  if (ui->currentIndex != (int)fValue) {
-                    ui->currentIndex = (int)fValue;
-                    queue_draw(ui->darea);
-                  }
-          break;
-          case MUTE:
-                  if (ui->isMuted != (int)fValue) {
-                    ui->isMuted = (int)fValue;
-                    queue_draw(ui->darea);
-                    robtk_cbtn_set_active(ui->btn_mute, (fValue > 0));
-                  }
-          break;
-          case ENABLE_RESTARTBYKBD:
-                  robtk_cbtn_set_active(ui->btn_restartkbd, (fValue > 0));
-          break;
-          case ENABLE_TRIGBYKBD:
-                  robtk_cbtn_set_active(ui->btn_trigkbd, (fValue > 0));
-          break;
-          case ENABLE_TRIGLEGATO:
-                  robtk_cbtn_set_active(ui->btn_triglegato, (fValue > 0));
-          break;
-          case DEFER:
-                  robtk_cbtn_set_active(ui->btn_defer, (fValue > 0));
-          break;
-          case TRANSPORT_MODE:
-                  robtk_cbtn_set_active(ui->btn_transport, (fValue > 0));
-          break;
-          case TEMPO:
-                  robtk_spin_set_value(ui->spb_tempo, (int)fValue);
-          break;
-          case TEMPO_MODE:
-                  robtk_cbtn_set_active(ui->btn_tempo_mode, (fValue > 0));
-          break;
-          default:
-          break;
-        }
+      float fValue = *(float *) buffer;
+      setParameter(handle, port_index, fValue);
     }
 }
 

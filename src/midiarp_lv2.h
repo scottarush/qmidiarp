@@ -101,6 +101,7 @@ private:
         bool transportAtomReceived;
         void updateParams();
         void sendPattern(const std::string & p);
+        void sendParameter(int index, float value);
         void forgeMidiEvent(uint32_t f, const uint8_t* const buffer, uint32_t size);
 
         uint64_t transportFramesDelta;  /**< Frames since last click start */

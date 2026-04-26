@@ -97,8 +97,11 @@ class ArpWidgetLV2 : public ArpWidget
     void mapParam(int value);
     void mapBool(bool on);
     void updatePattern(const QString&);
-    void receivePattern(LV2_Atom* atom);
     void sendPattern(const QString & p);
+
+    void receivePattern(LV2_Atom* atom);
+    void setParameter(int port_index, float value);
+    void handleAtom(LV2_Atom* atom);
 
   protected:
     void updateParam(int index, float fValue) const;

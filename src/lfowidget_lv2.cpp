@@ -143,114 +143,119 @@ void LfoWidgetLV2::port_event ( uint32_t port_index,
 
     if (!data.count()) sendUIisUp(true);
 
-    if (format == uris->atom_eventTransfer
-      && atom->type == uris->atom_Object) {
-        receiveWave(atom);
+    if (format == uris->atom_eventTransfer) {
+        if ( (atom->type == uris->atom_Blank) 
+                || (atom->type == uris->atom_Object)) {
+          handleAtom(atom);
+          return;
+        }
     }
     else if (format == 0 && buffer_size == sizeof(float)) {
-
-
         float fValue = *(float *) buffer;
-        
-        switch (port_index) {
-            case AMPLITUDE:
-                    amplitude->setValue(fValue);
-            break;
-            case OFFSET:
-                    offset->setValue(fValue);
-            break;
-            case PHASE:
-                    phase->setValue(fValue);
-            break;
-            case RESOLUTION:
-                    resBox->setCurrentIndex(fValue);
-            break;
-            case SIZE:
-                    sizeBox->setCurrentIndex(fValue);
-            break;
-            case FREQUENCY:
-                    freqBox->setCurrentIndex(fValue);
-            break;
-            case CH_OUT:
-                    channelOut->setCurrentIndex(fValue);
-            break;
-            case CH_IN:
-                    chIn->setCurrentIndex(fValue);
-            break;
-            case INDEX_IN1:
-                    indexIn[0]->setValue(fValue);
-            break;
-            case INDEX_IN2:
-                    indexIn[1]->setValue(fValue);
-            break;
-            case RANGE_IN1:
-                    rangeIn[0]->setValue(fValue);
-            break;
-            case RANGE_IN2:
-                    rangeIn[1]->setValue(fValue);
-            break;
-            case CURSOR_POS:
-                    if (cursor->currentIndex != (int)fValue) {
-                        cursor->updateNumbers(res, size);
-                        cursor->updatePosition(fValue);
-                        cursor->update();
-                    }
-            break;
-            case WAVEFORM:
-                    waveFormBox->setCurrentIndex(fValue);
-                    updateWaveForm(fValue);
-                    screen->updateData(data);
-                    screen->update();
-            break;
-            case LOOPMODE:
-                    loopBox->setCurrentIndex(fValue);
-            break;
-            case MUTE:
-                    muteOutAction->setChecked((bool)fValue);
-                    screen->setMuted(fValue);
-                    screen->update();
-            break;
-            case MOUSEX:
-            case MOUSEY:
-            case MOUSEBUTTON:
-            case MOUSEPRESSED:
-            break;
-            case CC_OUT:
-                    ccnumberBox->setValue(fValue);
-            break;
-            case CC_IN:
-                    ccnumberInBox->setValue(fValue);
-            break;
-            case ENABLE_NOTEOFF:
-                    enableNoteOff->setChecked((bool)fValue);
-            break;
-            case ENABLE_RESTARTBYKBD:
-                    enableRestartByKbd->setChecked((bool)fValue);
-            break;
-            case ENABLE_TRIGBYKBD:
-                    enableTrigByKbd->setChecked((bool)fValue);
-            break;
-            case ENABLE_TRIGLEGATO:
-                    enableTrigLegato->setChecked((bool)fValue);
-            break;
-            case RECORD:
-                    recordAction->setChecked((bool)fValue);
-            break;
-            case DEFER:
-                    deferChangesAction->setChecked((bool)fValue);
-            break;
-            case TRANSPORT_MODE:
-                    transportBox->setChecked((bool)fValue);
-            break;
-            case TEMPO_MODE:
-                    tempoModeBox->setChecked((bool)fValue);
-            break;
-            case TEMPO:
-                    tempoSpin->setValue((int)fValue);
-            break;
-            default:
-            break;
-        }
+        setParameter(port_index, fValue);
+    }
+}
+
+void LfoWidgetLV2::setParameter(int port_index, float fValue) 
+{        
+    switch (port_index) {
+        case AMPLITUDE:
+                amplitude->setValue(fValue);
+        break;
+        case OFFSET:
+                offset->setValue(fValue);
+        break;
+        case PHASE:
+                phase->setValue(fValue);
+        break;
+        case RESOLUTION:
+                resBox->setCurrentIndex(fValue);
+        break;
+        case SIZE:
+                sizeBox->setCurrentIndex(fValue);
+        break;
+        case FREQUENCY:
+                freqBox->setCurrentIndex(fValue);
+        break;
+        case CH_OUT:
+                channelOut->setCurrentIndex(fValue);
+        break;
+        case CH_IN:
+                chIn->setCurrentIndex(fValue);
+        break;
+        case INDEX_IN1:
+                indexIn[0]->setValue(fValue);
+        break;
+        case INDEX_IN2:
+                indexIn[1]->setValue(fValue);
+        break;
+        case RANGE_IN1:
+                rangeIn[0]->setValue(fValue);
+        break;
+        case RANGE_IN2:
+                rangeIn[1]->setValue(fValue);
+        break;
+        case CURSOR_POS:
+                if (cursor->currentIndex != (int)fValue) {
+                    cursor->updateNumbers(res, size);
+                    cursor->updatePosition(fValue);
+                    cursor->update();
+                }
+        break;
+        case WAVEFORM:
+                waveFormBox->setCurrentIndex(fValue);
+                updateWaveForm(fValue);
+                screen->updateData(data);
+                screen->update();
+        break;
+        case LOOPMODE:
+                loopBox->setCurrentIndex(fValue);
+        break;
+        case MUTE:
+                muteOutAction->setChecked((bool)fValue);
+                screen->setMuted(fValue);
+                screen->update();
+        break;
+        case MOUSEX:
+        case MOUSEY:
+        case MOUSEBUTTON:
+        case MOUSEPRESSED:
+        break;
+        case CC_OUT:
+                ccnumberBox->setValue(fValue);
+        break;
+        case CC_IN:
+                ccnumberInBox->setValue(fValue);
+        break;
+        case ENABLE_NOTEOFF:
+                enableNoteOff->setChecked((bool)fValue);
+        break;
+        case ENABLE_RESTARTBYKBD:
+                enableRestartByKbd->setChecked((bool)fValue);
+        break;
+        case ENABLE_TRIGBYKBD:
+                enableTrigByKbd->setChecked((bool)fValue);
+        break;
+        case ENABLE_TRIGLEGATO:
+                enableTrigLegato->setChecked((bool)fValue);
+        break;
+        case RECORD:
+                recordAction->setChecked((bool)fValue);
+        break;
+        case DEFER:
+                deferChangesAction->setChecked((bool)fValue);
+        break;
+        case TRANSPORT_MODE:
+                transportBox->setChecked((bool)fValue);
+        break;
+        case TEMPO_MODE:
+                tempoModeBox->setChecked((bool)fValue);
+        break;
+        case TEMPO:
+                tempoSpin->setValue((int)fValue);
+        break;
+        default:
+        break;
     }
 }
 
@@ -303,6 +308,7 @@ void LfoWidgetLV2::sendFlipWaveVertical()
     writeFunction(m_controller, MidiIn, lv2_atom_total_size(msg), uris->atom_eventTransfer, msg);        
     if (waveFormBox->currentIndex() != 5) copiedToCustomFlag = true;
 }
+
 
 void LfoWidgetLV2::receiveWave(LV2_Atom* atom)
 {
@@ -362,6 +368,33 @@ void LfoWidgetLV2::receiveWavePoint(int index, int value)
     sample.tick = index * TPQN / res;
     if (index >= data.count()) data.append(sample);
     else data.replace(index, sample);
+}
+
+void LfoWidgetLV2::handleAtom(LV2_Atom* atom)
+{
+    QMidiArpURIs* const uris = &m_uris;
+
+    if ( (atom->type != uris->atom_Blank) 
+            && (atom->type != uris->atom_Object)) {
+              return;
+            }
+
+    /* cast the buffer to Atom Object */
+    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+    
+    if (obj->body.otype == uris->hex_customwave) {
+      receiveWave(atom);      
+    }
+    else if (obj->body.otype == uris->atom_indexValue) {
+      LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
+      LV2_Atom *a0 = NULL;
+      LV2_Atom *a1 = NULL;
+      if (lv2_atom_object_get(obj, uris->atom_Int, &a0, uris->atom_Float, &a1, NULL) == 2) {
+        int port_index   = (int)((LV2_Atom_Int*)a0)->body + 2;
+        float fValue   = ((LV2_Atom_Float*)a1)->body;
+        setParameter(port_index, fValue);
+      }
+    }
 }
 
 void LfoWidgetLV2::mapBool(bool on)
