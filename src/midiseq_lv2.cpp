@@ -237,6 +237,10 @@ void MidiSeqLV2::run (uint32_t nframes )
                             *TPQN*tempo/nframes/60/sampleRate + tempoChangeTick;
                 if (handleEvent(inEv, tick - 2)) //if event is unmatched, forward it
                     forgeMidiEvent((int)((uint64_t)(&event->time.frames) % nframes), di, 3);
+                if (needsGUIUpdate) {
+                    sendParameter(TRANSPOSE, transp);
+                    sendParameter(VELOCITY, vel);
+                }
             }
         }
     }
