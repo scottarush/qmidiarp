@@ -298,20 +298,6 @@ void setParameter(LV2UI_Handle handle, int port_index, float fValue)
     }
 }
 
-void updateCursor(LV2UI_Handle handle, LV2_Atom* atom)
-{
-    QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
-    const QMidiArpURIs* uris = &ui->uris;
-
-    LV2_Atom_Object* obj = (LV2_Atom_Object*)atom;
-    LV2_Atom *a0 = NULL;
-    lv2_atom_object_get(obj, uris->atom_Int, &a0, NULL);
-    const int cursorpos   = ((LV2_Atom_Int*)a0)->body;
-
-    ui->currentIndex = cursorpos;
-    queue_draw(ui->darea);
-}
-
 void receivePattern(LV2UI_Handle handle, LV2_Atom* atom)
 {
     QMidiArpArpUI* ui = (QMidiArpArpUI*)handle;
