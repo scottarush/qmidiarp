@@ -1,5 +1,6 @@
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix pset: <http://lv2plug.in/ns/ext/presets#> .
 
 # Temporarily include description of lv2:MIDIPlugin for backwards compatibility
 lv2:MIDIPlugin
@@ -12,3 +13,83 @@ lv2:MIDIPlugin
     lv2:appliesTo <qmidiarp_arp.so> ;
     lv2:binary <qmidiarp_arp.so> ;
     rdfs:seeAlso <qmidiarp_arp.ttl>, <qmidiarp_arp_ui.ttl>  .
+
+#Presets
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern01>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Simple 4" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern02>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Simple 8" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern03>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Simple 16" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern04>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Simple 32" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern05>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chord 8" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern06>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chord+Bass 16" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern07>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chord Oct 16 A" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern08>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chord Oct 16 B" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern09>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chord Oct 16 C" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern10>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Fast Chords 1" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern11>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Fast Chords 2" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+    
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern12>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Fast Chords 3" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
+
+<https://git.code.sf.net/p/qmidiarp/arp#Pattern13>
+    a pset:Preset ;
+    lv2:appliesTo <https://git.code.sf.net/p/qmidiarp/arp> ;
+    rdfs:label "Chords/Glissando 16" ;
+    rdfs:seeAlso <qmidiarp_arp.ttl> .
