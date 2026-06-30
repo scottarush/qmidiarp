@@ -128,6 +128,9 @@ MidiArp::MidiArp()
     lastLatchTick = 0;
     latchDelayTicks = latchDelayMsec * TPQN / 1000;
     trigDelayTicks = 4;
+    m_drumGateMode = 0;
+    m_drumGateTime = 1;
+    m_gateCloseTick = 0;
     
     nextLength = 0;
     Sample sample = {0, 0, 0, false};
@@ -152,11 +155,38 @@ MidiArp::MidiArp()
 
 bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
 {
+    if (inEv.channel == 9) {
+        if (m_drumGateMode != 0) {
+            if (inEv.type == EV_NOTEON && inEv.value > 0) {
+                bool match = false;
+                if (inEv.data == 35 || inEv.data == 36) {
+                    match = true; // Bass drum
+                } else if (m_drumGateMode == 2 && (inEv.data == 38 || inEv.data == 40)) {
+                    match = true; // Snare
+                }
+                if (match) {
+                    m_gateCloseTick = tick + (m_drumGateTime * TPQN / 4);
+                    
+                    // Snap arpeggiator clock to the drum hit
+                    arpTick = tick;
+                    nextTick = tick;
+                }
+            }
+        }
+        // Fix: Intercept Channel 10 entirely to prevent drum events and sequencer 
+        // loop boundaries (e.g. CC 123 All Notes Off) from bleeding into the 
+        // arpeggiator engine when chIn is Omni.
+        return (false);
+    }
+
     if (inEv.channel != chIn && chIn != OMNI) return(true);
-    if ((inEv.type == EV_CONTROLLER) && 
+    if ((inEv.type == EV_CONTROLLER) &&
         ((inEv.data == CT_ALLNOTESOFF) || (inEv.data == CT_ALLSOUNDOFF))) {
-        clearNoteBuffer();
-        return(true); // In case we receive all notes off we still forward
+        // Fix: Do not clear the note buffer here. Sequencers (like Zynthian) 
+        // often send CC 123 when their transport loops. If we clear the buffer, 
+        // it kills keys the user is physically holding, causing the arpeggiator 
+        // to suddenly stop at loop boundaries. Forward the CC to downstream synths instead.
+        return(true);
     }
     if ((inEv.type == EV_CONTROLLER) && (inEv.data == CT_FOOTSW)) {
         setSustain((inEv.value == 127), tick);
@@ -457,6 +487,17 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
     } while (advancePatternIndex(false) && (gotCC || chordMode || c == ' '));
 
     l1 = 0;
+    
+    // Drum Gate Enforcer
+    if (m_drumGateMode != 0) {
+        if (arpTick >= m_gateCloseTick) {
+            // Close the gate (silence the arpeggiator step)
+            note[0] = -1;
+            velocity[0] = 0;
+            return;
+        }
+    }
+
     if (noteCount) do {
         noteIndex[l1] = (noteCount) ? tmpIndex[l1] % noteCount : 0;
         note[l1] = clip(notes[noteBufPtr][0][noteIndex[l1]] + current_octave * 12

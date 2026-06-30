@@ -399,6 +399,9 @@ void MidiArpLV2::updateParams()
                     (int)*val[HOST_SPEED],
                     false);
     }
+    
+    updateDrumGateMode((int)*val[DRUM_GATE]);
+    updateDrumGateTime((int)*val[DRUM_GATE_TIME]);
 }
 
 void MidiArpLV2::initTransport()

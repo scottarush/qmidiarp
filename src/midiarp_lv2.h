@@ -70,7 +70,9 @@ public:
             HOST_TEMPO = 26,
             HOST_POSITION = 27,
             HOST_SPEED = 28,
-            TEMPO_MODE = 29
+            TEMPO_MODE = 29,
+            DRUM_GATE = 30,
+            DRUM_GATE_TIME = 31
         };
 
         void connect_port(uint32_t port, void *data);
@@ -89,7 +91,7 @@ public:
 
 private:
 
-        float *val[31];
+        float *val[33];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t trStartingTick;

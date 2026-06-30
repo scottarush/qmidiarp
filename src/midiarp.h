@@ -235,6 +235,9 @@ class MidiArp : public MidiWorker  {
     int octHigh;        /*!< The higher octave limit. @see repeatPatternThroughChord */
 
     uint64_t returnTick; /*!< Holds the time in internal ticks of the currently active arpeggio step */
+    int m_drumGateMode;  /*!< Drum Gate Mode (0=Off, 1=Bass, 2=Bass+Snare) */
+    int m_drumGateTime;  /*!< Drum Gate Time in 1/16th notes (1 to 16) */
+    uint64_t m_gateCloseTick; /*!< Tick when the drum gate closes */
 
   public:
     MidiArp();
@@ -246,6 +249,8 @@ class MidiArp : public MidiWorker  {
     void updateRandomLengthAmp(int);
     void updateAttackTime(int);
     void updateReleaseTime(int);
+    void updateDrumGateMode(int val) { m_drumGateMode = val; }
+    void updateDrumGateTime(int val) { m_drumGateTime = val; }
 /**
  * @brief  calculates the index of the next arpeggio
  * step and revolves it if necessary.
