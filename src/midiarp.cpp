@@ -159,9 +159,9 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
         if (m_drumGateMode != 0) {
             if (inEv.type == EV_NOTEON && inEv.value > 0) {
                 bool match = false;
-                if (inEv.data == 35 || inEv.data == 36) {
+                if ((m_drumGateMode == 1 || m_drumGateMode == 3) && (inEv.data == 35 || inEv.data == 36)) {
                     match = true; // Bass drum
-                } else if (m_drumGateMode == 2 && (inEv.data == 38 || inEv.data == 40)) {
+                } else if ((m_drumGateMode == 2 || m_drumGateMode == 3) && (inEv.data == 38 || inEv.data == 40)) {
                     match = true; // Snare
                 }
                 if (match) {
