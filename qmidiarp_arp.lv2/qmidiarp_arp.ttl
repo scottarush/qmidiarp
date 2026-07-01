@@ -371,27 +371,6 @@
         lv2:maximum 1 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 34 ;
-        lv2:symbol "DRUM_GATE" ;
-        lv2:name "Drum Gate" ;
-        lv2:portProperty lv2:enumeration, lv2:integer ;
-        lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
-        lv2:scalePoint [ rdfs:label "Bass Drum"; rdf:value 1 ] ;
-        lv2:scalePoint [ rdfs:label "Snare Drum"; rdf:value 2 ] ;
-        lv2:scalePoint [ rdfs:label "Bass + Snare"; rdf:value 3 ] ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 3 ;
-    ] , [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 35 ;
-        lv2:symbol "DRUM_GATE_TIME" ;
-        lv2:name "Drum Gate Time" ;
-        lv2:portProperty lv2:integer ;
-        lv2:default 1 ;
-        lv2:maximum 16 ;
-    ] , [
-        a lv2:InputPort, lv2:ControlPort ;
         lv2:index 32 ;
         lv2:symbol "AUTOCHORD_STATE" ;
         lv2:name "Autochord" ;
@@ -455,6 +434,27 @@
         lv2:default 0 ;
         lv2:minimum 0 ;
         lv2:maximum 4 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 36 ;
+        lv2:symbol "DRUM_GATE" ;
+        lv2:name "Drum Gate" ;
+        lv2:portProperty lv2:enumeration, lv2:integer ;
+        lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+        lv2:scalePoint [ rdfs:label "Bass Drum"; rdf:value 1 ] ;
+        lv2:scalePoint [ rdfs:label "Snare Drum"; rdf:value 2 ] ;
+        lv2:scalePoint [ rdfs:label "Bass + Snare"; rdf:value 3 ] ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 3 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 37 ;
+        lv2:symbol "DRUM_GATE_TIME" ;
+        lv2:name "Drum Gate Time" ;
+        lv2:portProperty lv2:integer ;
+        lv2:default 1 ;
+        lv2:maximum 16 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 38 ;
