@@ -99,7 +99,7 @@ public:
 
 private:
 
-        float *val[38];
+        float *val[50];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t trStartingTick;
