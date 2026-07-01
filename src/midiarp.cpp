@@ -27,6 +27,7 @@
 #include <iostream>
 
 #include "midiarp.h"
+#include "autochord/autochord.h"
 
 /*
 #include "lockfree.h"
@@ -155,6 +156,7 @@ MidiArp::MidiArp()
 
 bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
 {
+    AutoChord* pChord = AutoChord::getInstance();
     if (inEv.channel == 9) {
         if (m_drumGateMode != 0) {
             if (inEv.type == EV_NOTEON && inEv.value > 0) {
@@ -201,18 +203,33 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
 
     if (inEv.value) {
         // This is a NOTE ON event
-        if (!getPressedNoteCount() || trigLegato) {
+        bool wasEmpty = (getPressedNoteCount() == 0);
+        if (wasEmpty || trigLegato) {
             purgeLatchBuffer(tick);
             if (restartByKbd) restartFlag = true;
             // if we have been triggered, remove pending release notes
             if (trigByKbd && release_time > 0) purgeReleaseNotes(noteBufPtr);
         }
-        
-        addNote(inEv.data, inEv.value, tick);
-        
+
+        switch (pChord->getState()) {
+        case AUTOCHORD_OFF:
+            addNote(inEv.data, inEv.value, tick);
+            break;
+        case AUTOCHORD_PAD:
+            pChord->notePressed(inEv.data, inEv.value);
+            return false;
+        case AUTOCHORD_ARP:
+            pChord->notePressed(inEv.data, inEv.value);
+            const autochord_notes_t* pNotes = pChord->getChordNotes();
+            for (uint8_t keyNum = 0;keyNum < pNotes->numNotes;keyNum++) {
+                addNote(pNotes->notes[keyNum], pNotes->velocities[keyNum], tick + keyNum);
+            }
+            break;
+        }
+
         if (repeatPatternThroughChord == 2) noteOfs = noteCount - 1;
 
-        if ((trigByKbd && (getPressedNoteCount() == 1))
+        if ((trigByKbd && (wasEmpty || getPressedNoteCount() == 1))
                     || trigLegato) {
             initArpTick(tick + trigDelayTicks);
             gotKbdTrig = true;
@@ -220,30 +237,39 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
     }
     else {
         // This is a NOTE OFF event
-
-        if (!noteCount) {
-            return(false);
-        }
-        if (sustain) {
-            if (sustainBufferCount == MAXNOTES - 1) purgeSustainBuffer(tick);
-            sustainBuffer[sustainBufferCount] = inEv.data;
-            sustainBufferCount++;
-            return(false);
-        }
-
-        if (latch_mode && keep_rel) {
-            if (latchBufferCount == MAXNOTES - 1) purgeLatchBuffer(tick);
-            latchBuffer[latchBufferCount] = inEv.data;
-            latchBufferCount++;
-            if (latchBufferCount != noteCount) {
-                if ((uint64_t)tick > (uint64_t)(lastLatchTick + latchDelayTicks) 
-                    && (latchBufferCount > 1)) purgeLatchBuffer(tick);
-                lastLatchTick = tick;
+        switch (pChord->getState()) {
+        case AUTOCHORD_OFF:
+            if (!noteCount) {
+                return(false);
             }
-            return(false);
+            if (sustain) {
+                if (sustainBufferCount == MAXNOTES - 1) purgeSustainBuffer(tick);
+                sustainBuffer[sustainBufferCount] = inEv.data;
+                sustainBufferCount++;
+                return(false);
+            }
+
+            if (latch_mode && keep_rel) {
+                if (latchBufferCount == MAXNOTES - 1) purgeLatchBuffer(tick);
+                latchBuffer[latchBufferCount] = inEv.data;
+                latchBufferCount++;
+                if (latchBufferCount != noteCount) {
+                    if ((uint64_t)tick > (uint64_t)(lastLatchTick + latchDelayTicks)
+                        && (latchBufferCount > 1)) purgeLatchBuffer(tick);
+                    lastLatchTick = tick;
+                }
+                return(false);
+            }
+
+            releaseNote(inEv.data, tick, keep_rel);
+            break;
+
+        case AUTOCHORD_PAD:
+        case AUTOCHORD_ARP:
+            pChord->noteReleased(inEv.data, inEv.value);
+            clearNoteBuffer();
+            break;
         }
-        
-        releaseNote(inEv.data, tick, keep_rel);
     }
     
     return(false);
