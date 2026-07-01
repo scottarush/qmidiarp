@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cmath>
 #include "midiarp_lv2.h"
+#include "autochord/autochord.h"
 
 MidiArpLV2::MidiArpLV2 (
     double sample_rate, const LV2_Feature *const *host_features )
@@ -402,6 +403,11 @@ void MidiArpLV2::updateParams()
     
     updateDrumGateMode((int)*val[DRUM_GATE]);
     updateDrumGateTime((int)*val[DRUM_GATE_TIME]);
+    
+    AutoChord::getInstance()->setState((autochord_state_t)(int)*val[AUTOCHORD_STATE]);
+    AutoChord::getInstance()->setKeySignature((key_signature_t)(int)*val[AUTOCHORD_KEY_SIG]);
+    AutoChord::getInstance()->setScale((autochord_lv2_scale_t)(int)*val[AUTOCHORD_SCALE]);
+    AutoChord::getInstance()->setExtension((mode_extensions_t)(int)*val[AUTOCHORD_EXTENSIONS]);
 }
 
 void MidiArpLV2::initTransport()

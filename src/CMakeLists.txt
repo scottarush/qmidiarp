@@ -62,6 +62,10 @@ if (APPBUILD)
         main.cpp
         midiworker.cpp
         midiarp.cpp
+        autochord/autochord.cpp
+        autochord/chord.cpp
+        autochord/scale.cpp
+        autochord/arp_modes.cpp
         midilfo.cpp
         midiseq.cpp
         midicctable.cpp
@@ -125,6 +129,10 @@ if (BUILD_LV2)
     set(LV2_ARP_SOURCES
         midiworker.cpp
         midiarp.cpp
+        autochord/autochord.cpp
+        autochord/chord.cpp
+        autochord/scale.cpp
+        autochord/arp_modes.cpp
         midiarp_lv2.cpp
     )
     
