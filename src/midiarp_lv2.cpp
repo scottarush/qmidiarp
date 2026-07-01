@@ -295,28 +295,30 @@ void MidiArpLV2::run ( uint32_t nframes )
         if ((curTick >= nextTick) && (transportSpeed)) {
             getNextFrame(curTick);
             if (!isMuted) {
-                if (outFrame[0].value) {
-                    int noteExtendTime = (int)*val[NOTE_EXTEND_TIME];
-                    if (noteExtendTime > 0) {
-                        for (int l = 0; l < bufPtr; l++) {
-                            evTickQueue[l] = curTick;
+                    if (outFrame[0].value) {
+                        int noteExtendTime = (int)*val[NOTE_EXTEND_TIME];
+                        int extensionTicks = 0;
+                        if (noteExtendTime > 0) {
+                            extensionTicks = noteExtendTime * (TPQN / 8);
+                            int baseEndTick = curTick + returnLength / 4;
+                            if (baseEndTick + extensionTicks >= nextTick) {
+                                extensionTicks = 0; 
+                            }
                         }
-                    }
 
-                    int l2 = 0;
-                    while(outFrame[l2].data >= 0) {
-                        unsigned char d[3];
-                        d[0] = 0x90 + channelOut;
-                        d[1] = outFrame[l2].data;
-                        d[2] = outFrame[l2].value;
-                        forgeMidiEvent(f, d, 3);
-                        
-                        int extensionTicks = noteExtendTime * (TPQN / 8);
-                        evTickQueue[bufPtr] = curTick + returnLength / 4 + extensionTicks;
-                        evQueue[bufPtr] = outFrame[l2].data;
-                        bufPtr++;
-                        l2++;
-                    }
+                        int l2 = 0;
+                        while(outFrame[l2].data >= 0) {
+                            unsigned char d[3];
+                            d[0] = 0x90 + channelOut;
+                            d[1] = outFrame[l2].data;
+                            d[2] = outFrame[l2].value;
+                            forgeMidiEvent(f, d, 3);
+                            
+                            evTickQueue[bufPtr] = curTick + returnLength / 4 + extensionTicks;
+                            evQueue[bufPtr] = outFrame[l2].data;
+                            bufPtr++;
+                            l2++;
+                        }
                 }
             }
             float pos = (float)getFramePtr();
