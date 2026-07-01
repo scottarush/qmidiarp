@@ -296,6 +296,13 @@ void MidiArpLV2::run ( uint32_t nframes )
             getNextFrame(curTick);
             if (!isMuted) {
                 if (outFrame[0].value) {
+                    int noteExtendTime = (int)*val[NOTE_EXTEND_TIME];
+                    if (noteExtendTime > 0) {
+                        for (int l = 0; l < bufPtr; l++) {
+                            evTickQueue[l] = curTick;
+                        }
+                    }
+
                     int l2 = 0;
                     while(outFrame[l2].data >= 0) {
                         unsigned char d[3];
@@ -303,7 +310,9 @@ void MidiArpLV2::run ( uint32_t nframes )
                         d[1] = outFrame[l2].data;
                         d[2] = outFrame[l2].value;
                         forgeMidiEvent(f, d, 3);
-                        evTickQueue[bufPtr] = curTick + returnLength / 4;
+                        
+                        int extensionTicks = noteExtendTime * (TPQN / 8);
+                        evTickQueue[bufPtr] = curTick + returnLength / 4 + extensionTicks;
                         evQueue[bufPtr] = outFrame[l2].data;
                         bufPtr++;
                         l2++;

@@ -71,12 +71,13 @@ public:
             HOST_POSITION = 27,
             HOST_SPEED = 28,
             TEMPO_MODE = 29,
-            DRUM_GATE = 30,
-            DRUM_GATE_TIME = 31,
-            AUTOCHORD_STATE = 32,
-            AUTOCHORD_KEY_SIG = 33,
-            AUTOCHORD_SCALE = 34,
-            AUTOCHORD_EXTENSIONS = 35
+            AUTOCHORD_STATE = 30,
+            AUTOCHORD_KEY_SIG = 31,
+            AUTOCHORD_SCALE = 32,
+            AUTOCHORD_EXTENSIONS = 33,
+            DRUM_GATE = 34,
+            DRUM_GATE_TIME = 35,
+            NOTE_EXTEND_TIME = 36
         };
 
         void connect_port(uint32_t port, void *data);
@@ -95,7 +96,7 @@ public:
 
 private:
 
-        float *val[37];
+        float *val[38];
         uint64_t curFrame;
         uint64_t tempoChangeTick;
         uint64_t trStartingTick;
