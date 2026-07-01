@@ -298,7 +298,8 @@ void MidiArp::addNote(int note, int vel, int64_t tick)
     int index = 0;
 
     if (!noteCount || (note > notes[bufPtr][0][noteCount - 1])
-            || (repeatPatternThroughChord == 4) )
+            || (repeatPatternThroughChord == 4) 
+            || (AutoChord::getInstance()->getState() == AUTOCHORD_ARP))
         index = noteCount;
     else {
         while (index < MAXNOTES && note > notes[bufPtr][0][index]) index++;
