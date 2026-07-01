@@ -6,7 +6,7 @@ AutoChord is a powerful harmonizer and chord generation engine built directly in
 
 - **Diatonic Harmonization**: Automatically generates the correct Major, Minor, or Diminished chord based on the input note's position within the selected scale.
 - **Scales and Modes**: Supports all fundamental modes (Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian) across all 12 key signatures.
-- **Chord Extensions**: Supports generating extended chords (e.g., Octaves, 5ths, 7ths, 9ths, 13ths) to add color to the harmony.
+- **Chord Extensions**: Supports generating extended chords (e.g., Octaves, 5ths, 7ths, 9ths, 13ths) to add color to the harmony. The `Octave` and `5th` modes specifically generate 3-note sequences (`Root -> 5th/Octave -> Root`) before repeating. This pedal point sequence is particularly useful for driving 4/4 time Rock rhythms.
 - **Root Play Count**: Allows you to dynamically repeat the root note of the chord multiple times (up to 16) before arpeggiating up the rest of the chord degrees. A count of 1 means the root is played exactly once before moving on. This injects heavy, driving root-pedal rhythms into standard sequences without needing complex custom patterns.
 - **Dual Output Modes**:
   - **PAD Mode**: Outputs the generated chord as a polyphonic pad. Perfect for laying down lush backing chords with a single finger.
