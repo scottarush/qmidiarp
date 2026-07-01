@@ -10,7 +10,7 @@ AutoChord is a powerful harmonizer and chord generation engine built directly in
 - **Dual Output Modes**:
   - **PAD Mode**: Outputs the generated chord as a polyphonic pad. Perfect for laying down lush backing chords with a single finger.
   - **ARP Mode**: Injects the generated chord into QMidiArp's arpeggiator engine, transforming the chord into rhythmic arpeggiated sequences.
-- **Note Extend Time & Look-Ahead**: Allows the user to stretch the length of arpeggiated notes beyond their preset duration (in units of 1/32 notes). To maintain pristine legato and prevent muddy overlapping chords, the engine utilizes a *Look-Ahead* collision detection system. If the extended note length exceeds or collides with the scheduled start time of the *next* note in the pattern, the extension is gracefully cancelled. This guarantees tight arpeggio runs while allowing hanging notes (e.g. before a Rest) to ring out naturally.
+- **Note Extend Time & Look-Ahead**: Allows the user to stretch the length of arpeggiated notes beyond their preset duration (in units of 1/32 notes). To maintain pristine legato and prevent muddy overlapping chords, the engine utilizes a *Look-Ahead* collision detection system. If the extended note length exceeds or collides with the scheduled start time of the *next* note in the pattern, the extension is gracefully cancelled. This guarantees tight arpeggio runs while allowing hanging notes (e.g. before a Rest) to ring out naturally. Furthermore, if the engine predicts that the upcoming note will be silenced by the **Drum Gate**, the collision is ignored, allowing the last note before the gate closes to ring out beautifully across the silenced gap.
 
 ## Operating Modes
 
