@@ -41,6 +41,36 @@ public:
 };
 */
 
+static bool isDrumEventMatch(int note, int mode) {
+    bool isBass = (note == 35 || note == 36);
+    bool isFloorTom = (note == 41 || note == 43);
+    bool isSnare = (note == 38 || note == 40);
+    bool isStick = (note == 37);
+    bool isRide = (note == 51 || note == 52 || note == 53 || note == 56 || note == 59);
+
+    if (mode == 0) return isBass;
+    if (mode == 1) return isFloorTom;
+    if (mode == 2) return isSnare;
+    if (mode == 3) return isStick;
+    if (mode == 4) return isRide;
+    if (mode == 5) return isBass || isFloorTom;
+    if (mode == 6) return isSnare || isStick || isRide;
+    if (mode == 7) return isBass || isFloorTom || isSnare || isStick || isRide;
+    return false;
+}
+
+static bool isFillEventMatch(int note, int mode) {
+    bool isCrash = (note == 49 || note == 55 || note == 57);
+    bool isLowTom = (note == 41 || note == 45 || note == 47);
+    bool isHighTom = (note == 43 || note == 48 || note == 50);
+
+    if (mode == 0) return isCrash;
+    if (mode == 1) return isLowTom;
+    if (mode == 2) return isHighTom;
+    if (mode == 3) return isCrash || isLowTom || isHighTom;
+    return false;
+}
+
 MidiArp::MidiArp()
 {
     /*
@@ -129,7 +159,10 @@ MidiArp::MidiArp()
     lastLatchTick = 0;
     latchDelayTicks = latchDelayMsec * TPQN / 1000;
     trigDelayTicks = 4;
-    m_drumGateMode = 0;
+    m_triggerMode = 0;
+    m_drumEvents = 0;
+    m_fillEvents = 0;
+    m_drumTriggerActive = false;
     m_drumGateTime = 1;
     m_gateCloseTick = 0;
     
@@ -158,27 +191,32 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
 {
     AutoChord* pChord = AutoChord::getInstance();
     if (inEv.channel == 9) {
-        if (m_drumGateMode != 0) {
+        if (m_triggerMode != 0) {
             if (inEv.type == EV_NOTEON && inEv.value > 0) {
                 bool match = false;
-                bool isBass = (inEv.data == 35 || inEv.data == 36);
-                bool isSnare = (inEv.data == 38 || inEv.data == 40);
-                bool isHat = (inEv.data == 42 || inEv.data == 44 || inEv.data == 46);
-                bool isCymbal = (inEv.data == 49 || inEv.data == 51 || inEv.data == 55 || inEv.data == 57);
-                bool isTom = (inEv.data == 41 || inEv.data == 43 || inEv.data == 45 || inEv.data == 47 || inEv.data == 48 || inEv.data == 50);
+                if (m_triggerMode == 1 || m_triggerMode == 2) {
+                    match = isDrumEventMatch(inEv.data, m_drumEvents);
+                } else if (m_triggerMode == 3) {
+                    match = isDrumEventMatch(inEv.data, m_drumEvents) || isFillEventMatch(inEv.data, m_fillEvents);
+                }
 
-                if (m_drumGateMode == 1) match = isBass;
-                else if (m_drumGateMode == 2) match = isBass || isSnare;
-                else if (m_drumGateMode == 3) match = isBass || isSnare || isTom;
-                else if (m_drumGateMode == 4) match = isBass || isSnare || isHat;
-                else if (m_drumGateMode == 5) match = isBass || isSnare || isCymbal;
-                else if (m_drumGateMode == 6) match = isBass || isSnare || isTom || isHat || isCymbal;
                 if (match) {
-                    m_gateCloseTick = tick + (m_drumGateTime * TPQN / 8);
-                    
-                    // Snap arpeggiator clock to the drum hit
-                    arpTick = tick;
-                    nextTick = tick;
+                    if (m_triggerMode == 1) { // Gate
+                        m_gateCloseTick = tick + (m_drumGateTime * TPQN / 8);
+                        arpTick = tick;
+                        nextTick = tick;
+                    } else if (m_triggerMode == 2 || m_triggerMode == 3) { // Drums or Drums+Fill
+                        if (pChord->getState() == AUTOCHORD_OFF) {
+                            initArpTick(tick + trigDelayTicks);
+                            gotKbdTrig = true;
+                        } else if (pChord->getState() == AUTOCHORD_ARP) {
+                            if (getPressedNoteCount() > 0) {
+                                m_drumTriggerActive = true;
+                                initArpTick(tick + trigDelayTicks);
+                                gotKbdTrig = true;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -443,6 +481,10 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
     tmpIndex[1] = -1;
     gotCC = false;
     pause = false;
+
+    if ((m_triggerMode == 2 || m_triggerMode == 3) && AutoChord::getInstance()->getState() == AUTOCHORD_ARP && !m_drumTriggerActive) {
+        pause = true;
+    }
     
     if (purgeReleaseFlag) {
         purgeLatchBuffer(arpTick);
@@ -532,7 +574,7 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
     l1 = 0;
     
     // Drum Gate Enforcer
-    if (m_drumGateMode != 0) {
+    if (m_triggerMode == 1) { // Gate
         if (arpTick >= m_gateCloseTick) {
             // Close the gate (silence the arpeggiator step)
             note[0] = -1;
@@ -661,6 +703,10 @@ void MidiArp::checkOctaveAtEdge(bool reset)
 
 bool MidiArp::advancePatternIndex(bool reset)
 {
+    if ((m_triggerMode == 2 || m_triggerMode == 3) && AutoChord::getInstance()->getState() == AUTOCHORD_ARP && !m_drumTriggerActive) {
+        return false;
+    }
+
     if (patternLen) {
         patternIndex++;
     }
@@ -685,6 +731,9 @@ bool MidiArp::advancePatternIndex(bool reset)
                     noteOfs = 0;
                     octOfs+=octIncr;
                     checkOctaveAtEdge(reset);
+                    if (!reset && (m_triggerMode == 2 || m_triggerMode == 3)) {
+                        m_drumTriggerActive = false;
+                    }
                 }
                 break;
             case 2:

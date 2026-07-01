@@ -235,7 +235,10 @@ class MidiArp : public MidiWorker  {
     int octHigh;        /*!< The higher octave limit. @see repeatPatternThroughChord */
 
     uint64_t returnTick; /*!< Holds the time in internal ticks of the currently active arpeggio step */
-    int m_drumGateMode;  /*!< Drum Gate Mode (0=Off, 1=Bass, 2=Snare, 3=Bass+Snare) */
+    int m_triggerMode;   /*!< Trigger Mode (0=Off, 1=Gate, 2=Drums, 3=Drums+Fill) */
+    int m_drumEvents;    /*!< Drum Events selection */
+    int m_fillEvents;    /*!< Fill Events selection */
+    bool m_drumTriggerActive; /*!< True if ARP sequence is currently triggered by drums */
     int m_drumGateTime;  /*!< Drum Gate Time in 1/16th notes (1 to 16) */
     int m_rootPlayCount; /*!< Number of times to repeat the root in ARP mode */
     uint64_t m_gateCloseTick; /*!< Tick when the drum gate closes */
@@ -250,7 +253,9 @@ class MidiArp : public MidiWorker  {
     void updateRandomLengthAmp(int);
     void updateAttackTime(int);
     void updateReleaseTime(int);
-    void updateDrumGateMode(int val) { m_drumGateMode = val; }
+    void updateTriggerMode(int val) { m_triggerMode = val; }
+    void updateDrumEvents(int val) { m_drumEvents = val; }
+    void updateFillEvents(int val) { m_fillEvents = val; }
     void updateDrumGateTime(int val) { m_drumGateTime = val; }
     void updateRootPlayCount(int val) { m_rootPlayCount = val; }
 /**

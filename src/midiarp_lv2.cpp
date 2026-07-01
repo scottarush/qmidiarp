@@ -299,7 +299,7 @@ void MidiArpLV2::run ( uint32_t nframes )
                         int gatedTailTime = (int)*val[GATED_TAIL_TIME];
                         int noteOffTick = curTick + returnLength / 4;
                         if (gatedTailTime > 0) {
-                            bool willBeGated = (m_drumGateMode > 0) && (nextTick >= m_gateCloseTick);
+                            bool willBeGated = ((int)*val[TRIGGER_MODE] == 1) && (nextTick >= m_gateCloseTick);
                             if (willBeGated) {
                                 noteOffTick = curTick + gatedTailTime * (TPQN / 8); 
                             }
@@ -439,7 +439,9 @@ void MidiArpLV2::updateParams()
                     false);
     }
     
-    updateDrumGateMode((int)*val[DRUM_GATE]);
+    updateTriggerMode((int)*val[TRIGGER_MODE]);
+    updateDrumEvents((int)*val[DRUM_EVENTS]);
+    updateFillEvents((int)*val[FILL_EVENTS]);
     updateDrumGateTime((int)*val[DRUM_GATE_TIME]);
     updateRootPlayCount((int)*val[ROOT_PLAY_COUNT]);
     
