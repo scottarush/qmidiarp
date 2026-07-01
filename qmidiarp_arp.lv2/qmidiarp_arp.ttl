@@ -438,8 +438,8 @@
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 36 ;
-        lv2:symbol "ROOT_PLAY_COUNT" ;
-        lv2:name "Root Play Count" ;
+        lv2:symbol "ROOT_PRE_COUNT" ;
+        lv2:name "Root Pre Count" ;
         lv2:portProperty lv2:integer ;
         lv2:default 1 ;
         lv2:minimum 1 ;
@@ -447,6 +447,15 @@
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 37 ;
+        lv2:symbol "ROOT_POST_COUNT" ;
+        lv2:name "Root Post Count" ;
+        lv2:portProperty lv2:integer ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 16 ;
+    ] , [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 38 ;
         lv2:symbol "TRIGGER_MODE" ;
         lv2:name "Trigger Mode" ;
         lv2:portProperty lv2:enumeration, lv2:integer ;
@@ -459,7 +468,7 @@
         lv2:maximum 3 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 38 ;
+        lv2:index 39 ;
         lv2:symbol "DRUM_EVENTS" ;
         lv2:name "Drum Events" ;
         lv2:portProperty lv2:enumeration, lv2:integer ;
@@ -476,7 +485,7 @@
         lv2:maximum 7 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 39 ;
+        lv2:index 40 ;
         lv2:symbol "FILL_EVENTS" ;
         lv2:name "Fill Events" ;
         lv2:portProperty lv2:enumeration, lv2:integer ;
@@ -489,7 +498,7 @@
         lv2:maximum 3 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 40 ;
+        lv2:index 41 ;
         lv2:symbol "DRUM_GATE_TIME" ;
         lv2:name "Drum Gate Time" ;
         lv2:portProperty lv2:integer ;
@@ -498,7 +507,7 @@
         lv2:maximum 32 ;
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 41 ;
+        lv2:index 42 ;
         lv2:symbol "GATED_TAIL_TIME" ;
         lv2:name "Gated Tail Time" ;
         lv2:portProperty lv2:integer ;

@@ -75,12 +75,13 @@ public:
             AUTOCHORD_KEY_SIG = 31,
             AUTOCHORD_SCALE = 32,
             AUTOCHORD_EXTENSIONS = 33,
-            ROOT_PLAY_COUNT = 34,
-            TRIGGER_MODE = 35,
-            DRUM_EVENTS = 36,
-            FILL_EVENTS = 37,
-            DRUM_GATE_TIME = 38,
-            GATED_TAIL_TIME = 39
+            ROOT_PRE_COUNT = 34,
+            ROOT_POST_COUNT = 35,
+            TRIGGER_MODE = 36,
+            DRUM_EVENTS = 37,
+            FILL_EVENTS = 38,
+            DRUM_GATE_TIME = 39,
+            GATED_TAIL_TIME = 40
         };
 
         void connect_port(uint32_t port, void *data);

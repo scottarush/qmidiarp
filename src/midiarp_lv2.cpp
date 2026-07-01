@@ -445,7 +445,8 @@ void MidiArpLV2::updateParams()
     updateDrumEvents((int)*val[DRUM_EVENTS]);
     updateFillEvents((int)*val[FILL_EVENTS]);
     updateDrumGateTime((int)*val[DRUM_GATE_TIME]);
-    updateRootPlayCount((int)*val[ROOT_PLAY_COUNT]);
+    if (val[ROOT_PRE_COUNT]) updateRootPreCount((int)*val[ROOT_PRE_COUNT]);
+    if (val[ROOT_POST_COUNT]) updateRootPostCount((int)*val[ROOT_POST_COUNT]);
     
     AutoChord::getInstance()->setState((autochord_state_t)(int)*val[AUTOCHORD_STATE]);
     AutoChord::getInstance()->setKeySignature((key_signature_t)(int)*val[AUTOCHORD_KEY_SIG]);

@@ -198,8 +198,8 @@ static const chord_entry_t chord_table[] = {
    {{ 0,  4,  6, 15, -1, -1 }, "7b5#9 "},
    {{ 0,  4,  8, 15, -1, -1 }, "7b5b9 "} ,
    {{ 0,  6, -1, -1, -1, -1 }, "pwrb5 "},
-   {{ 0,  7,  0, -1, -1, -1 }, "pw5R  "},
-   {{ 0, 12,  0, -1, -1, -1 }, "octR  "}
+   {{ 0,  7, -1, -1, -1, -1 }, "pw5R  "},
+   {{ 0, 12, -1, -1, -1, -1 }, "octR  "}
 
 };
 // Declaration of singleton instance variables

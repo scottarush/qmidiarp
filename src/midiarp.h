@@ -240,7 +240,8 @@ class MidiArp : public MidiWorker  {
     int m_fillEvents;    /*!< Fill Events selection */
     bool m_drumTriggerActive; /*!< True if ARP sequence is currently triggered by drums */
     int m_drumGateTime;  /*!< Drum Gate Time in 1/16th notes (1 to 16) */
-    int m_rootPlayCount; /*!< Number of times to repeat the root in ARP mode */
+    int m_rootPreCount; /*!< Number of times to repeat the root at start of ARP */
+    int m_rootPostCount; /*!< Number of times to repeat the root at end of ARP */
     uint64_t m_gateCloseTick; /*!< Tick when the drum gate closes */
 
   public:
@@ -257,7 +258,8 @@ class MidiArp : public MidiWorker  {
     void updateDrumEvents(int val) { m_drumEvents = val; }
     void updateFillEvents(int val) { m_fillEvents = val; }
     void updateDrumGateTime(int val) { m_drumGateTime = val; }
-    void updateRootPlayCount(int val) { m_rootPlayCount = val; }
+    void updateRootPreCount(int val) { m_rootPreCount = val; }
+    void updateRootPostCount(int val) { m_rootPostCount = val; }
 /**
  * @brief  calculates the index of the next arpeggio
  * step and revolves it if necessary.
