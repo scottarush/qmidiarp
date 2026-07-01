@@ -27,11 +27,13 @@
 #include "midiarp_lv2.h"
 #include "autochord/autochord.h"
 
+static float dummy_val = 0.0f;
+
 MidiArpLV2::MidiArpLV2 (
     double sample_rate, const LV2_Feature *const *host_features )
     :MidiArp()
 {
-    for (int l1 = 0; l1 < 50; l1++) val[l1] = 0;
+    for (int l1 = 0; l1 < 50; l1++) val[l1] = &dummy_val;
 
     sampleRate = sample_rate;
     curFrame = 0;
