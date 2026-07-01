@@ -301,7 +301,8 @@ void MidiArpLV2::run ( uint32_t nframes )
                         if (noteExtendTime > 0) {
                             extensionTicks = noteExtendTime * (TPQN / 8);
                             int baseEndTick = curTick + returnLength / 4;
-                            if (baseEndTick + extensionTicks >= nextTick) {
+                            bool willBeGated = (m_drumGateMode > 0) && (nextTick >= m_gateCloseTick);
+                            if (!willBeGated && (baseEndTick + extensionTicks >= nextTick)) {
                                 extensionTicks = 0; 
                             }
                         }
