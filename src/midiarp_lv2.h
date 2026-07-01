@@ -75,7 +75,7 @@ public:
             AUTOCHORD_KEY_SIG = 31,
             AUTOCHORD_SCALE = 32,
             AUTOCHORD_EXTENSIONS = 33,
-            ROOT_REPEAT_COUNT = 34,
+            ROOT_PLAY_COUNT = 34,
             DRUM_GATE = 35,
             DRUM_GATE_TIME = 36,
             GATED_TAIL_TIME = 37

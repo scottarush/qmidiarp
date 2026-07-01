@@ -438,8 +438,8 @@
     ] , [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 36 ;
-        lv2:symbol "ROOT_REPEAT_COUNT" ;
-        lv2:name "Root Repeat" ;
+        lv2:symbol "ROOT_PLAY_COUNT" ;
+        lv2:name "Root Play Count" ;
         lv2:portProperty lv2:integer ;
         lv2:default 1 ;
         lv2:minimum 1 ;

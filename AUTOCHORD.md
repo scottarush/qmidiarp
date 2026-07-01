@@ -7,7 +7,7 @@ AutoChord is a powerful harmonizer and chord generation engine built directly in
 - **Diatonic Harmonization**: Automatically generates the correct Major, Minor, or Diminished chord based on the input note's position within the selected scale.
 - **Scales and Modes**: Supports all fundamental modes (Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian) across all 12 key signatures.
 - **Chord Extensions**: Supports generating extended chords (e.g., Octaves, 5ths, 7ths, 9ths, 13ths) to add color to the harmony.
-- **Root Repeat**: Allows you to dynamically repeat the root note of the chord multiple times (up to 16) before arpeggiating up the rest of the chord degrees. This injects heavy, driving root-pedal rhythms into standard sequences without needing complex custom patterns.
+- **Root Play Count**: Allows you to dynamically repeat the root note of the chord multiple times (up to 16) before arpeggiating up the rest of the chord degrees. A count of 1 means the root is played exactly once before moving on. This injects heavy, driving root-pedal rhythms into standard sequences without needing complex custom patterns.
 - **Dual Output Modes**:
   - **PAD Mode**: Outputs the generated chord as a polyphonic pad. Perfect for laying down lush backing chords with a single finger.
   - **ARP Mode**: Injects the generated chord into QMidiArp's arpeggiator engine, transforming the chord into rhythmic arpeggiated sequences.
@@ -38,13 +38,13 @@ The AutoChord architecture is divided into the core chord-generation logic and i
 - **`ArpModes` & `Scale`**: These modules (`arp_modes.cpp`, `scale.cpp`) contain the mathematical definitions of intervals, scales, and how specific degrees of a scale map to chord qualities (Major, Minor, Dim).
 
 ### 2. LV2 Plugin Integration (`src/midiarp_lv2.cpp`)
-- **Parameters**: AutoChord exposes 6 new LV2 control ports: `State`, `Scale`, `Key Signature`, `Extensions`, `Root Repeat`, and `Gated Tail Time`. These are updated in the `updateParams()` loop.
+- **Parameters**: AutoChord exposes 6 new LV2 control ports: `State`, `Scale`, `Key Signature`, `Extensions`, `Root Play Count`, and `Gated Tail Time`. These are updated in the `updateParams()` loop.
 - **PAD Mode Forging**: In the `run()` function, `MidiArpLV2` intercepts `AUTOCHORD_PAD` mode. It checks if there are pending Note-On or Note-Off events from the AutoChord engine and uses `forgeMidiEvent()` to send them directly to the LV2 output buffer, bypassing the `MidiArp` sequence engine completely.
 - **Gated Tail Engine**: During the standard ARP run loop, after querying `MidiArp::getNextFrame()`, the engine evaluates if the Drum Gate is active and about to close (`nextTick >= m_gateCloseTick`). If so, it overrides the `Note-Off` timestamp of the current frame to `curTick + Gated Tail Time`. All standard notes bypass this block and turn off at their native lengths.
 
 ### 3. Core QMidiArp Integration (`src/midiarp.cpp`)
 - **Event Handling (`handleEvent`)**: 
   - Intercepts incoming `NOTE_ON` and `NOTE_OFF` events.
-  - In `AUTOCHORD_ARP` mode, a single `NOTE_ON` queries the AutoChord singleton for the chord notes. The resulting notes are sequentially pushed into QMidiArp's internal `notes` buffer via `addNote()`. If `Root Repeat` is > 1, the root note (index 0) is artificially pushed into the buffer `N-1` additional times before the rest of the chord is evaluated, effectively forcing the sequencer to play a root-pedal pattern.
+  - In `AUTOCHORD_ARP` mode, a single `NOTE_ON` queries the AutoChord singleton for the chord notes. The resulting notes are sequentially pushed into QMidiArp's internal `notes` buffer via `addNote()`. If `Root Play Count` is > 1, the root note (index 0) is artificially pushed into the buffer `N-1` additional times before the rest of the chord is evaluated, effectively forcing the sequencer to play a root-pedal pattern.
 - **Pattern Overrides (`advancePatternIndex`)**:
   - Modifies the pattern indexer to intercept `AUTOCHORD_ARP` mode and force `noteOfs` to increment at the end of every pattern cycle. This ensures the arpeggiator engine sweeps through the buffered chord notes instead of repeating the root note. 
