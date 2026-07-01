@@ -167,7 +167,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
                     match = true; // Snare
                 }
                 if (match) {
-                    m_gateCloseTick = tick + (m_drumGateTime * TPQN / 4);
+                    m_gateCloseTick = tick + (m_drumGateTime * TPQN / 8);
                     
                     // Snap arpeggiator clock to the drum hit
                     arpTick = tick;

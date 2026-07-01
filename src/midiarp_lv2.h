@@ -77,7 +77,7 @@ public:
             AUTOCHORD_EXTENSIONS = 33,
             DRUM_GATE = 34,
             DRUM_GATE_TIME = 35,
-            NOTE_EXTEND_TIME = 36
+            GATED_TAIL_TIME = 36
         };
 
         void connect_port(uint32_t port, void *data);

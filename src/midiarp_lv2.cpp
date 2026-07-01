@@ -296,13 +296,12 @@ void MidiArpLV2::run ( uint32_t nframes )
             getNextFrame(curTick);
             if (!isMuted) {
                     if (outFrame[0].value) {
-                        int noteExtendTime = (int)*val[NOTE_EXTEND_TIME];
-                        int extensionTicks = 0;
-                        if (noteExtendTime > 0) {
-                            extensionTicks = noteExtendTime * (TPQN / 8);
+                        int gatedTailTime = (int)*val[GATED_TAIL_TIME];
+                        int noteOffTick = curTick + returnLength / 4;
+                        if (gatedTailTime > 0) {
                             bool willBeGated = (m_drumGateMode > 0) && (nextTick >= m_gateCloseTick);
-                            if (!willBeGated) {
-                                extensionTicks = 0; 
+                            if (willBeGated) {
+                                noteOffTick = curTick + gatedTailTime * (TPQN / 8); 
                             }
                         }
 
@@ -314,7 +313,7 @@ void MidiArpLV2::run ( uint32_t nframes )
                             d[2] = outFrame[l2].value;
                             forgeMidiEvent(f, d, 3);
                             
-                            evTickQueue[bufPtr] = curTick + returnLength / 4 + extensionTicks;
+                            evTickQueue[bufPtr] = noteOffTick;
                             evQueue[bufPtr] = outFrame[l2].data;
                             bufPtr++;
                             l2++;
