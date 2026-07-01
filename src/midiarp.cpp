@@ -165,12 +165,14 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
                 bool isSnare = (inEv.data == 38 || inEv.data == 40);
                 bool isHat = (inEv.data == 42 || inEv.data == 44 || inEv.data == 46);
                 bool isCymbal = (inEv.data == 49 || inEv.data == 51 || inEv.data == 55 || inEv.data == 57);
+                bool isTom = (inEv.data == 41 || inEv.data == 43 || inEv.data == 45 || inEv.data == 47 || inEv.data == 48 || inEv.data == 50);
 
                 if (m_drumGateMode == 1) match = isBass;
                 else if (m_drumGateMode == 2) match = isBass || isSnare;
-                else if (m_drumGateMode == 3) match = isBass || isSnare || isHat;
-                else if (m_drumGateMode == 4) match = isBass || isSnare || isCymbal;
-                else if (m_drumGateMode == 5) match = isBass || isSnare || isHat || isCymbal;
+                else if (m_drumGateMode == 3) match = isBass || isSnare || isTom;
+                else if (m_drumGateMode == 4) match = isBass || isSnare || isHat;
+                else if (m_drumGateMode == 5) match = isBass || isSnare || isCymbal;
+                else if (m_drumGateMode == 6) match = isBass || isSnare || isTom || isHat || isCymbal;
                 if (match) {
                     m_gateCloseTick = tick + (m_drumGateTime * TPQN / 8);
                     
