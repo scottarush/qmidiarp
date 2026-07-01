@@ -526,6 +526,7 @@ void MidiArp::getNote(int64_t *tick, int64_t note[], int velocity[], int *length
 
     if (noteCount) do {
         noteIndex[l1] = (noteCount) ? tmpIndex[l1] % noteCount : 0;
+        fprintf(stderr, "getNote: noteCount=%d, tmpIndex=%d, noteIndex=%d, note=%d\n", noteCount, tmpIndex[l1], noteIndex[l1], notes[noteBufPtr][0][noteIndex[l1]]);
         note[l1] = clip(notes[noteBufPtr][0][noteIndex[l1]] + current_octave * 12
                 + chordSemitone[l1], 0, 127, &outOfRange);
         if (outOfRange) checkOctaveAtEdge(false);
@@ -654,7 +655,12 @@ bool MidiArp::advancePatternIndex(bool reset)
         currentRepetition++;
         currentRepetition %= nRepetitions;
 
-        switch (repeatPatternThroughChord) {
+        int arpRepeat = repeatPatternThroughChord;
+        if (AutoChord::getInstance()->getState() == AUTOCHORD_ARP && arpRepeat == 0) {
+            arpRepeat = 1;
+        }
+
+        switch (arpRepeat) {
             case 1:
             case 4:
                 noteOfs++;
