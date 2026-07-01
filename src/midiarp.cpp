@@ -225,13 +225,22 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
         case AUTOCHORD_PAD:
             pChord->notePressed(inEv.data, inEv.value);
             return false;
-        case AUTOCHORD_ARP:
+        case AUTOCHORD_ARP: {
             pChord->notePressed(inEv.data, inEv.value);
             const autochord_notes_t* pNotes = pChord->getChordNotes();
+            int offset = 0;
+            if (pNotes->numNotes > 0) {
+                for (int i = 0; i < m_rootRepeatCount; i++) {
+                    addNote(pNotes->notes[0], pNotes->velocities[0], tick + offset);
+                    offset++;
+                }
+            }
             for (uint8_t keyNum = 0;keyNum < pNotes->numNotes;keyNum++) {
-                addNote(pNotes->notes[keyNum], pNotes->velocities[keyNum], tick + keyNum);
+                addNote(pNotes->notes[keyNum], pNotes->velocities[keyNum], tick + offset);
+                offset++;
             }
             break;
+        }
         }
 
         if (repeatPatternThroughChord == 2) noteOfs = noteCount - 1;
