@@ -11,7 +11,11 @@ AutoChord is a powerful harmonizer and chord generation engine built directly in
 - **Dual Output Modes**:
   - **PAD Mode**: Outputs the generated chord as a polyphonic pad. Perfect for laying down lush backing chords with a single finger.
   - **ARP Mode**: Injects the generated chord into QMidiArp's arpeggiator engine, transforming the chord into rhythmic arpeggiated sequences.
-- **Note Extend Time (Gated Tail)**: A specialized parameter (range 0 to 32, representing 1/32 note units) designed to work exclusively with the **Drum Gate**. All standard arpeggiator notes play strictly at their native preset duration, ensuring tight, clean sequences. However, if the Drum Gate closes and silences the arpeggiator, this feature kicks in to automatically extend the *final note before the gate closes*. This allows the last note in your phrase (e.g., a final bass pluck) to hang on and ring out beautifully across the silenced gap without turning the rest of your arpeggiator runs into mud.
+- **Trigger Modes (Gate & Drum Trigger)**: Completely decouples triggering behavior from event matching. 
+  - **Gate**: Acts as a traditional drum gate, unmuting the arpeggiator for a set duration when a drum is struck.
+  - **Drums** & **Drums+Fill**: Transforms the arpeggiator into a triggered one-shot sequence. When a chord is held in `ARP` mode, the arpeggiator remains perfectly silent until a matching drum event arrives. Once struck, the full sequence (including any Root repeats) plays exactly once and then intelligently pauses until the next drum hit. Releasing the chord keys instantly terminates playback.
+- **Split Event Configurations (Drum & Fill)**: Fine-grained selection of which MIDI Channel 10 events fire the Trigger Mode. `Drum Events` explicitly maps structural kit pieces (Bass, Snares, Floor Toms, Rides, Sticks) while `Fill Events` maps transition hits (Crashes, High/Low Toms). Setting Trigger Mode to `Drums+Fill` seamlessly evaluates both sets of conditions.
+- **Note Extend Time (Gated Tail)**: A specialized parameter (range 0 to 32, representing 1/32 note units) designed to work exclusively with **Trigger Mode = Gate**. All standard arpeggiator notes play strictly at their native preset duration, ensuring tight, clean sequences. However, if the gate closes and silences the arpeggiator, this feature kicks in to automatically extend the *final note before the gate closes*. This allows the last note in your phrase (e.g., a final bass pluck) to hang on and ring out beautifully across the silenced gap without turning the rest of your arpeggiator runs into mud.
 
 ## Operating Modes
 
@@ -38,13 +42,15 @@ The AutoChord architecture is divided into the core chord-generation logic and i
 - **`ArpModes` & `Scale`**: These modules (`arp_modes.cpp`, `scale.cpp`) contain the mathematical definitions of intervals, scales, and how specific degrees of a scale map to chord qualities (Major, Minor, Dim).
 
 ### 2. LV2 Plugin Integration (`src/midiarp_lv2.cpp`)
-- **Parameters**: AutoChord exposes 6 new LV2 control ports: `State`, `Scale`, `Key Signature`, `Extensions`, `Root Play Count`, and `Gated Tail Time`. These are updated in the `updateParams()` loop.
+- **Parameters**: AutoChord exposes new LV2 control ports: `State`, `Scale`, `Key Signature`, `Extensions`, `Root Play Count`, `Trigger Mode`, `Drum Events`, `Fill Events`, and `Gated Tail Time`. These are updated in the `updateParams()` loop.
 - **PAD Mode Forging**: In the `run()` function, `MidiArpLV2` intercepts `AUTOCHORD_PAD` mode. It checks if there are pending Note-On or Note-Off events from the AutoChord engine and uses `forgeMidiEvent()` to send them directly to the LV2 output buffer, bypassing the `MidiArp` sequence engine completely.
-- **Gated Tail Engine**: During the standard ARP run loop, after querying `MidiArp::getNextFrame()`, the engine evaluates if the Drum Gate is active and about to close (`nextTick >= m_gateCloseTick`). If so, it overrides the `Note-Off` timestamp of the current frame to `curTick + Gated Tail Time`. All standard notes bypass this block and turn off at their native lengths.
+- **Gated Tail Engine**: During the standard ARP run loop, after querying `MidiArp::getNextFrame()`, the engine evaluates if the Drum Gate is active (`Trigger Mode = Gate`) and about to close (`nextTick >= m_gateCloseTick`). If so, it overrides the `Note-Off` timestamp of the current frame to `curTick + Gated Tail Time`. All standard notes bypass this block and turn off at their native lengths.
 
 ### 3. Core QMidiArp Integration (`src/midiarp.cpp`)
 - **Event Handling (`handleEvent`)**: 
   - Intercepts incoming `NOTE_ON` and `NOTE_OFF` events.
+  - Channel 9 events trigger a lookup against the `m_drumEvents` and `m_fillEvents` bitmaps using dedicated matching functions. Depending on `m_triggerMode`, it dynamically snaps the `arpTick` for Gates or injects an `initArpTick()` restart to fire off sequence playback for Drum Triggers.
   - In `AUTOCHORD_ARP` mode, a single `NOTE_ON` queries the AutoChord singleton for the chord notes. The resulting notes are sequentially pushed into QMidiArp's internal `notes` buffer via `addNote()`. If `Root Play Count` is > 1, the root note (index 0) is artificially pushed into the buffer `N-1` additional times before the rest of the chord is evaluated, effectively forcing the sequencer to play a root-pedal pattern.
 - **Pattern Overrides (`advancePatternIndex`)**:
   - Modifies the pattern indexer to intercept `AUTOCHORD_ARP` mode and force `noteOfs` to increment at the end of every pattern cycle. This ensures the arpeggiator engine sweeps through the buffered chord notes instead of repeating the root note. 
+  - For Drum Trigger mode, it detects when `noteOfs` wraps back to 0 (sequence completion), sets the internal trigger state to false, and actively refuses to increment the pattern index until the next drum hit arrives. In `getNote()`, this pause state forces the output velocity to 0, efficiently silencing the engine without disrupting absolute time.
