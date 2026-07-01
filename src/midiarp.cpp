@@ -230,7 +230,7 @@ bool MidiArp::handleEvent(MidiEvent inEv, int64_t tick, int keep_rel)
             const autochord_notes_t* pNotes = pChord->getChordNotes();
             int offset = 0;
             if (pNotes->numNotes > 0) {
-                for (int i = 0; i < m_rootRepeatCount; i++) {
+                for (int i = 0; i < m_rootRepeatCount - 1; i++) {
                     addNote(pNotes->notes[0], pNotes->velocities[0], tick + offset);
                     offset++;
                 }
