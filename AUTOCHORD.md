@@ -10,6 +10,7 @@ AutoChord is a powerful harmonizer and chord generation engine built directly in
 - **Dual Output Modes**:
   - **PAD Mode**: Outputs the generated chord as a polyphonic pad. Perfect for laying down lush backing chords with a single finger.
   - **ARP Mode**: Injects the generated chord into QMidiArp's arpeggiator engine, transforming the chord into rhythmic arpeggiated sequences.
+- **Note Extend Time & Look-Ahead**: Allows the user to stretch the length of arpeggiated notes beyond their preset duration (in units of 1/32 notes). To maintain pristine legato and prevent muddy overlapping chords, the engine utilizes a *Look-Ahead* collision detection system. If the extended note length exceeds or collides with the scheduled start time of the *next* note in the pattern, the extension is gracefully cancelled. This guarantees tight arpeggio runs while allowing hanging notes (e.g. before a Rest) to ring out naturally.
 
 ## Operating Modes
 
@@ -36,8 +37,9 @@ The AutoChord architecture is divided into the core chord-generation logic and i
 - **`ArpModes` & `Scale`**: These modules (`arp_modes.cpp`, `scale.cpp`) contain the mathematical definitions of intervals, scales, and how specific degrees of a scale map to chord qualities (Major, Minor, Dim).
 
 ### 2. LV2 Plugin Integration (`src/midiarp_lv2.cpp`)
-- **Parameters**: AutoChord exposes 4 new LV2 control ports: `State`, `Scale`, `Key Signature`, and `Extensions`. These are updated in the `updateParams()` loop.
+- **Parameters**: AutoChord exposes 5 new LV2 control ports: `State`, `Scale`, `Key Signature`, `Extensions`, and `Note Extend Time`. These are updated in the `updateParams()` loop.
 - **PAD Mode Forging**: In the `run()` function, `MidiArpLV2` intercepts `AUTOCHORD_PAD` mode. It checks if there are pending Note-On or Note-Off events from the AutoChord engine and uses `forgeMidiEvent()` to send them directly to the LV2 output buffer, bypassing the `MidiArp` sequence engine completely.
+- **Note Extend Look-Ahead**: During the standard ARP run loop, after querying `MidiArp::getNextFrame()`, the engine calculates the intended `Note-Off` timestamp by adding `Note Extend Time`. It then performs a look-ahead by comparing this timestamp against `nextTick` (the exact start time of the upcoming note in the pattern). If a collision is detected, the extension is dynamically cancelled.
 
 ### 3. Core QMidiArp Integration (`src/midiarp.cpp`)
 - **Event Handling (`handleEvent`)**: 
